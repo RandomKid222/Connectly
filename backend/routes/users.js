@@ -1,8 +1,13 @@
 const express = require('express');
 const db = require('../db');
 const { requireAuth } = require('../middleware/auth');
+const { upload, saveImage, deleteImage } = require('../media');
 const router = express.Router();
 router.use(requireAuth);
+router.use((req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  next();
+});
 
 router.get('/:username', async (req, res) => {
   const user = await db.get('SELECT id, username, bio, avatar_url, created_at FROM users WHERE username = ?', req.params.username);
@@ -16,13 +21,45 @@ router.get('/:username', async (req, res) => {
 });
 router.put('/me/update', async (req, res) => {
   const { bio, avatar_url } = req.body || {};
-  if ((bio !== undefined && (typeof bio !== 'string' || bio.length > 5000)) ||
-      (avatar_url !== undefined && (typeof avatar_url !== 'string' ||
-        avatar_url.length > 2048 || (avatar_url && !/^https:\/\//i.test(avatar_url))))) {
-    return res.status(400).json({ error: 'Bio must be at most 5000 characters; avatar must be an HTTPS URL' });
+  if (avatar_url !== undefined) {
+    return res.status(400).json({ error: 'Use the profile photo upload to change your picture' });
   }
-  await db.run('UPDATE users SET bio = COALESCE(?, bio), avatar_url = COALESCE(?, avatar_url) WHERE id = ?',
-    bio ?? null, avatar_url ?? null, req.userId);
+  if (bio !== undefined && (typeof bio !== 'string' || bio.length > 5000)) {
+    return res.status(400).json({ error: 'Bio must be at most 5000 characters' });
+  }
+  await db.run('UPDATE users SET bio = COALESCE(?, bio) WHERE id = ?', bio ?? null, req.userId);
+  const user = await db.get('SELECT id, username, email, bio, avatar_url, created_at FROM users WHERE id = ?', req.userId);
+  res.json({ user });
+});
+router.post('/me/avatar', upload.single('avatar'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'Choose a JPG, PNG, or WebP image' });
+  const image = await saveImage(req.file.buffer, { maxDimension: 512, folder: 'connectly/avatars' });
+  let previous;
+  try {
+    previous = await db.get('SELECT avatar_url, avatar_public_id FROM users WHERE id = ?', req.userId);
+    if (!previous) {
+      await deleteImage(image.url, image.publicId).catch(console.error);
+      return res.status(404).json({ error: 'User not found' });
+    }
+    await db.run('UPDATE users SET avatar_url = ?, avatar_public_id = ? WHERE id = ?',
+      image.url, image.publicId, req.userId);
+  } catch (err) {
+    await deleteImage(image.url, image.publicId).catch(console.error);
+    throw err;
+  }
+  if (previous.avatar_url) {
+    await deleteImage(previous.avatar_url, previous.avatar_public_id).catch(console.error);
+  }
+  const user = await db.get('SELECT id, username, email, bio, avatar_url, created_at FROM users WHERE id = ?', req.userId);
+  res.json({ user });
+});
+router.delete('/me/avatar', async (req, res) => {
+  const previous = await db.get('SELECT avatar_url, avatar_public_id FROM users WHERE id = ?', req.userId);
+  if (!previous) return res.status(404).json({ error: 'User not found' });
+  await db.run("UPDATE users SET avatar_url = '', avatar_public_id = '' WHERE id = ?", req.userId);
+  if (previous.avatar_url) {
+    await deleteImage(previous.avatar_url, previous.avatar_public_id).catch(console.error);
+  }
   const user = await db.get('SELECT id, username, email, bio, avatar_url, created_at FROM users WHERE id = ?', req.userId);
   res.json({ user });
 });

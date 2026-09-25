@@ -14,7 +14,7 @@ const signupLimit = rateLimit({ windowMs: 60 * 60 * 1000, limit: 5,
   message: { error: 'Too many signup attempts. Try again in an hour.' },
   standardHeaders: 'draft-7', legacyHeaders: false });
 function publicUser(u) {
-  const { password_hash, ...rest } = u;
+  const { password_hash, avatar_public_id, ...rest } = u;
   return rest;
 }
 

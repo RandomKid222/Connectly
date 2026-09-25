@@ -19,22 +19,32 @@ existing repository and upload the changed files from the new ZIP:
 
 | Repository folder | Files to upload |
 | --- | --- |
-| `backend/` | `db.js` |
-| `backend/routes/` | `messages.js`, `users.js` |
-| `frontend/src/components/` | `Navbar.jsx`, new `UserSearch.jsx` |
+| `backend/` | `db.js`, `media.js` |
+| `backend/routes/` | `auth.js`, `messages.js`, `posts.js`, `users.js` |
+| `frontend/src/components/` | new `Avatar.jsx`, `Navbar.jsx`, `PostCard.jsx`, `CommentSection.jsx`, `UserSearch.jsx` |
 | `frontend/src/context/` | `AuthContext.jsx` |
-| `frontend/src/pages/` | `Messages.jsx` |
+| `frontend/src/pages/` | `Feed.jsx`, `Messages.jsx`, `Profile.jsx` |
 | `frontend/src/` | `styles.css` |
-| repository root | `README.md`, `DEPLOY.md` |
+| `frontend/` | `index.html` |
+| `frontend/public/` | `favicon.svg`, `favicon-32.png`, `apple-touch-icon.png`, `social-card.svg`, `social-card.png` |
+| repository root | `render.yaml`, `README.md`, `DEPLOY.md` |
 
 Commit the uploaded files. Keep the folder paths exactly as listed; do not
 upload the ZIP itself. Both services need their new code for unread messages
 to work.
 
-This version automatically adds message read status to the existing Turso
-database when Render starts. Existing accounts and messages remain in place.
-While the site is open, the unread dot and messages update about every 30
-seconds; opening a conversation marks its received messages as read.
+The public URL is `https://connectlyplace.netlify.app/`. If you rename the
+Netlify site or add your own domain, update the canonical, `og:url`, `og:image`,
+and `twitter:image` addresses in `frontend/index.html`, plus `CORS_ORIGIN` in
+`render.yaml` and the Render service's Environment page.
+
+This version automatically adds message read status and profile-photo tracking
+to the existing Turso database when Render starts. Existing accounts and
+messages remain in place. Profile photos use your existing Cloudinary settings;
+no additional environment variable is needed.
+While the site is open, posts, profiles, visible comments, and the unread dot
+update about every 30 seconds. Open conversations check for messages about
+every 15 seconds. Opening a conversation marks its received messages as read.
 
 ## 1. Which files to put on GitHub
 
@@ -100,18 +110,19 @@ independently of Render restarts. Back up data you care about.
    root `render.yaml`; this creates a Node web service with `backend` as its
    root directory, `npm ci` as build command, `node server.js` as start command,
    and `/api/health` as health check. Choose the **Free** instance if offered.
-3. The Blueprint prompts for these variables:
+3. The Blueprint prompts for these private variables:
 
    | Name | Enter |
    | --- | --- |
-   | `CORS_ORIGIN` | Initially `https://placeholder.invalid`; replace with the real Netlify URL in step 5. |
    | `TURSO_DATABASE_URL` | The full `libsql://...` URL from Turso. |
    | `TURSO_AUTH_TOKEN` | The private Turso database token. |
    | `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name. |
    | `CLOUDINARY_API_KEY` | Cloudinary API key. |
    | `CLOUDINARY_API_SECRET` | Cloudinary API secret. |
 
-   Render generates `JWT_SECRET` automatically. Do not paste the example value
+   `render.yaml` sets the public `CORS_ORIGIN` to
+   `https://connectlyplace.netlify.app`. Render generates `JWT_SECRET`
+   automatically. Do not paste the example value
    from `.env.example`. `NODE_ENV=production` and `NODE_VERSION=24` are also set
    by the Blueprint. Do not put a real secret in `render.yaml` or the frontend.
    For an *existing* Blueprint, set newly added variables manually in the
@@ -133,19 +144,20 @@ independently of Render restarts. Back up data you care about.
    Render URL from step 3, without `/api` or a trailing slash. Example:
    `https://social-network-backend-xxxx.onrender.com`. This URL is public and
    is the only variable that belongs on Netlify.
-4. Deploy. Copy your HTTPS Netlify URL, for example
-   `https://connectly-example.netlify.app`. `frontend/public/_redirects`
+4. Deploy at `https://connectlyplace.netlify.app/`. `frontend/public/_redirects`
    makes refreshes on `/profile/...` and `/messages/...` load correctly.
    If you change `VITE_API_URL` later, trigger a new frontend deploy.
 
 ## 5. Connect and test
 
-1. Render → your backend → **Environment**: replace `CORS_ORIGIN` with the
-   exact Netlify origin: `https://connectly-example.netlify.app` (your actual
-   URL, no path, no trailing slash). Save and allow the service to redeploy.
+1. Render → your backend → **Environment**: confirm `CORS_ORIGIN` is exactly
+   `https://connectlyplace.netlify.app` (no trailing slash). If it still shows
+   the old URL, change it and choose **Save and deploy**. The committed
+   `render.yaml` also contains the new value for Blueprint syncs.
 2. Visit the Netlify URL. Sign up with a test account; create a post with an
-   image; refresh and check it remains. Test login, like, comment, follow,
-   and messaging with a second test account. A free Render web service may
+   image; upload a profile photo from your profile; refresh and check both
+   remain. Test login, like, comment, follow, and messaging with a second test
+   account. A free Render web service may
    take around a minute to wake after being idle.
 3. If the browser shows a CORS error, compare `CORS_ORIGIN` with the exact
    URL in the address bar. If requests go to Netlify `/api/...` instead of
@@ -165,6 +177,8 @@ independently of Render restarts. Back up data you care about.
    **Settings → API Keys** page. Never share the API secret or token in a
    screenshot. Image uploads are sent to Cloudinary through the backend;
    Netlify needs no Cloudinary keys.
+   Profile photos use the same checks and upload path. In Cloudinary's Media
+   Library, find them in `connectly/avatars`.
 6. Login allows 10 unsuccessful attempts per IP address in 15 minutes. If you
    reach that limit, wait until the window ends before retrying. `Invalid
    credentials` means the email/username or password did not match a stored

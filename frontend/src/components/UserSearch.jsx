@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import api from '../api';
+import Avatar from './Avatar.jsx';
 
 export default function UserSearch() {
   const [query, setQuery] = useState('');
@@ -73,9 +74,7 @@ export default function UserSearch() {
           {status === 'ready' && results.map(user => (
             <Link key={user.id} to={`/profile/${user.username}`} onClick={clear}
               className="user-search-result">
-              {user.avatar_url
-                ? <img src={user.avatar_url} alt="" />
-                : <span className="search-avatar" aria-hidden="true">{user.username[0].toUpperCase()}</span>}
+              <Avatar url={user.avatar_url} username={user.username} className="search-avatar" />
               <span>{user.username}</span>
             </Link>
           ))}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import api from '../api';
 import { useAuth } from '../context/AuthContext.jsx';
 import PostCard from '../components/PostCard.jsx';
@@ -12,12 +12,45 @@ export default function Feed() {
   const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
   const [postError, setPostError] = useState('');
+  const [loadError, setLoadError] = useState('');
+  const postMutation = useRef(0);
 
   useEffect(() => {
+    let cancelled = false;
+    let busy = false;
     setLoading(true);
-    api.get(tab === 'feed' ? '/posts/feed' : '/posts/explore')
-      .then(res => setPosts(res.data.posts))
-      .finally(() => setLoading(false));
+    setPosts([]);
+    setLoadError('');
+    const refresh = async (initial = false) => {
+      if (busy) return;
+      busy = true;
+      const version = postMutation.current;
+      try {
+        const res = await api.get(tab === 'feed' ? '/posts/feed' : '/posts/explore');
+        if (!cancelled && version === postMutation.current) {
+          setPosts(res.data.posts);
+          setLoadError('');
+        }
+      } catch {
+        if (!cancelled && initial) setLoadError('Could not load posts. Please try again shortly.');
+      } finally {
+        busy = false;
+        if (!cancelled && initial) setLoading(false);
+      }
+    };
+    refresh(true);
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') refresh();
+    };
+    const timer = setInterval(onVisible, 30000);
+    window.addEventListener('focus', onVisible);
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+      window.removeEventListener('focus', onVisible);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
   }, [tab]);
 
   async function submitPost(e) {
@@ -30,7 +63,8 @@ export default function Feed() {
       form.append('content', content);
       if (image) form.append('image', image);
       const res = await api.post('/posts', form);
-      setPosts([res.data.post, ...posts]);
+      postMutation.current += 1;
+      setPosts(current => [res.data.post, ...current.filter(post => post.id !== res.data.post.id)]);
       setContent('');
       setImage(null);
       e.target.reset?.();
@@ -60,7 +94,8 @@ export default function Feed() {
   }
 
   function handleDelete(id) {
-    setPosts(posts.filter(p => p.id !== id));
+    postMutation.current += 1;
+    setPosts(current => current.filter(post => post.id !== id));
   }
 
   return (
@@ -90,6 +125,8 @@ export default function Feed() {
 
       {loading ? (
         <p className="muted">Loading posts...</p>
+      ) : loadError && posts.length === 0 ? (
+        <p className="error" role="alert">{loadError}</p>
       ) : posts.length === 0 ? (
         <p className="muted">
           {tab === 'feed' ? 'No posts yet — follow people or check Explore.' : 'No posts yet.'}

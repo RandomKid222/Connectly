@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api';
 import { useAuth } from '../context/AuthContext.jsx';
+import Avatar from '../components/Avatar.jsx';
 
 export default function Messages() {
   const { userId } = useParams();
@@ -15,11 +16,14 @@ export default function Messages() {
   const [search, setSearch] = useState('');
   const [results, setResults] = useState([]);
   const bottomRef = useRef(null);
+  const threadMutation = useRef(0);
+  const conversationRequest = useRef(0);
 
   const loadConversations = useCallback(async () => {
+    const request = ++conversationRequest.current;
     try {
       const res = await api.get('/messages/conversations');
-      setConversations(res.data.conversations);
+      if (request === conversationRequest.current) setConversations(res.data.conversations);
     } catch {
       // The next refresh will retry if the backend is waking up.
     }
@@ -55,10 +59,16 @@ export default function Messages() {
     const loadThread = async () => {
       if (busy || document.visibilityState !== 'visible') return;
       busy = true;
+      const version = threadMutation.current;
       try {
         const res = await api.get(`/messages/${userId}`);
         if (cancelled) return;
-        setThread(res.data.messages);
+        if (version === threadMutation.current) {
+          setThread(current => current.length === res.data.messages.length &&
+            current.every((message, index) => message.id === res.data.messages[index].id &&
+              message.content === res.data.messages[index].content)
+            ? current : res.data.messages);
+        }
         setOtherUser(res.data.otherUser);
         setThreadError('');
         const unread = res.data.messages.filter(message =>
@@ -74,7 +84,7 @@ export default function Messages() {
       }
     };
     loadThread();
-    const timer = setInterval(loadThread, 30000);
+    const timer = setInterval(loadThread, 15000);
     document.addEventListener('visibilitychange', loadThread);
     return () => {
       cancelled = true;
@@ -107,7 +117,9 @@ export default function Messages() {
     if (!text.trim() || !userId) return;
     try {
       const res = await api.post(`/messages/${userId}`, { content: text });
-      setThread(current => [...current, res.data.message]);
+      threadMutation.current += 1;
+      setThread(current => current.some(message => message.id === res.data.message.id)
+        ? current : [...current, res.data.message]);
       setText('');
       setThreadError('');
       loadConversations();
@@ -131,7 +143,10 @@ export default function Messages() {
             {results.filter(user => user.id !== me.id).map(user => (
               <button key={user.id} type="button" className="conversation-item"
                 onClick={() => { navigate(`/messages/${user.id}`); setSearch(''); }}>
-                {user.username}
+                <span className="conversation-main">
+                  <Avatar url={user.avatar_url} username={user.username} className="conversation-avatar" />
+                  {user.username}
+                </span>
               </button>
             ))}
           </div>
@@ -143,12 +158,17 @@ export default function Messages() {
             className={`conversation-item ${String(conversation.id) === userId ? 'active' : ''}`}
             onClick={() => navigate(`/messages/${conversation.id}`)}
           >
-            <span className="conversation-name-row">
-              <span className="conversation-name">{conversation.username}</span>
-              {Number(conversation.unreadCount) > 0 &&
-                <span className="unread-dot" aria-label={`${conversation.unreadCount} unread messages`} />}
+            <span className="conversation-main">
+              <Avatar url={conversation.avatar_url} username={conversation.username} className="conversation-avatar" />
+              <span className="conversation-details">
+                <span className="conversation-name-row">
+                  <span className="conversation-name">{conversation.username}</span>
+                  {Number(conversation.unreadCount) > 0 &&
+                    <span className="unread-dot" aria-label={`${conversation.unreadCount} unread messages`} />}
+                </span>
+                <span className="conversation-preview">{conversation.lastMessage}</span>
+              </span>
             </span>
-            <span className="conversation-preview">{conversation.lastMessage}</span>
           </button>
         ))}
         {conversations.length === 0 && <p className="muted">Search for someone to start chatting.</p>}
@@ -159,7 +179,10 @@ export default function Messages() {
           <p className="muted centered">Select a conversation.</p>
         ) : (
           <>
-            <div className="thread-header">{otherUser?.username || 'Conversation'}</div>
+            <div className="thread-header">
+              {otherUser && <Avatar url={otherUser.avatar_url} username={otherUser.username} className="conversation-avatar" />}
+              {otherUser?.username || 'Conversation'}
+            </div>
             {threadError && <p className="error thread-error" role="alert">{threadError}</p>}
             <div className="thread-messages">
               {thread.map(message => (

@@ -8,6 +8,7 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
   const userIdRef = useRef(null);
+  const unreadRequest = useRef(0);
   userIdRef.current = user?.id ?? null;
 
   useEffect(() => {
@@ -25,9 +26,10 @@ export function AuthProvider({ children }) {
   const refreshUnread = useCallback(async () => {
     const requestedFor = userIdRef.current;
     if (!requestedFor) return;
+    const request = ++unreadRequest.current;
     try {
       const res = await api.get('/messages/unread');
-      if (userIdRef.current === requestedFor) {
+      if (userIdRef.current === requestedFor && request === unreadRequest.current) {
         setUnreadCount(Number(res.data.unreadCount) || 0);
       }
     } catch {

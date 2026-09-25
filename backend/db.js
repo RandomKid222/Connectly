@@ -15,7 +15,7 @@ const schema = [
   `CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE NOT NULL,
     email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL,
-    bio TEXT DEFAULT '', avatar_url TEXT DEFAULT '',
+    bio TEXT DEFAULT '', avatar_url TEXT DEFAULT '', avatar_public_id TEXT DEFAULT '',
     created_at TEXT DEFAULT CURRENT_TIMESTAMP
   )`,
   `CREATE TABLE IF NOT EXISTS posts (
@@ -61,6 +61,10 @@ async function init() {
   const cols = await client.execute('PRAGMA table_info(posts)');
   if (!cols.rows.some(row => row.name === 'image_public_id')) {
     await client.execute("ALTER TABLE posts ADD COLUMN image_public_id TEXT DEFAULT ''");
+  }
+  const userCols = await client.execute('PRAGMA table_info(users)');
+  if (!userCols.rows.some(row => row.name === 'avatar_public_id')) {
+    await client.execute("ALTER TABLE users ADD COLUMN avatar_public_id TEXT DEFAULT ''");
   }
   const messageCols = await client.execute('PRAGMA table_info(messages)');
   if (!messageCols.rows.some(row => row.name === 'read_at')) {

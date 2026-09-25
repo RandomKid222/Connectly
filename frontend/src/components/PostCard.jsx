@@ -1,12 +1,18 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api, { API_ORIGIN } from '../api';
 import CommentSection from './CommentSection.jsx';
+import Avatar from './Avatar.jsx';
 
 export default function PostCard({ post, onDelete }) {
   const [liked, setLiked] = useState(post.likedByMe);
   const [likeCount, setLikeCount] = useState(post.likeCount);
   const [showComments, setShowComments] = useState(false);
+
+  useEffect(() => {
+    setLiked(post.likedByMe);
+    setLikeCount(post.likeCount);
+  }, [post.id, post.likedByMe, post.likeCount]);
 
   async function toggleLike() {
     if (liked) {
@@ -30,7 +36,8 @@ export default function PostCard({ post, onDelete }) {
     <div className="post-card">
       <div className="post-header">
         <Link to={`/profile/${post.author.username}`} className="post-author">
-          {post.author.username}
+          <Avatar url={post.author.avatar_url} username={post.author.username} className="post-avatar" />
+          <span>{post.author.username}</span>
         </Link>
         <span className="post-date">{new Date(post.created_at).toLocaleString()}</span>
       </div>

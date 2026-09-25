@@ -4,6 +4,10 @@ const { requireAuth } = require('../middleware/auth');
 const { upload, saveImage, deleteImage } = require('../media');
 const router = express.Router();
 router.use(requireAuth);
+router.use((req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  next();
+});
 
 const postSelect = `SELECT p.*, u.username AS author_name, u.avatar_url AS author_avatar,
   (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) AS likeCount,

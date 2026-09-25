@@ -26,13 +26,13 @@ const upload = multer({
   }
 });
 
-async function saveImage(bytes) {
+async function saveImage(bytes, { maxDimension = 1600, folder = 'connectly' } = {}) {
   let normalized;
   try {
     const source = sharp(bytes, { limitInputPixels: 40_000_000, failOn: 'error', animated: false });
     const meta = await source.metadata();
     if (!['jpeg', 'png', 'webp'].includes(meta.format)) throw new Error('Unsupported image format');
-    normalized = await source.rotate().resize({ width: 1600, height: 1600,
+    normalized = await source.rotate().resize({ width: maxDimension, height: maxDimension,
       fit: 'inside', withoutEnlargement: true }).webp({ quality: 80 }).toBuffer();
   } catch (_) {
     throw Object.assign(new Error('Invalid image'), { status: 400 });
@@ -41,7 +41,7 @@ async function saveImage(bytes) {
     let result;
     try {
       result = await new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream({ folder: 'connectly',
+        const stream = cloudinary.uploader.upload_stream({ folder,
           resource_type: 'image', format: 'webp' }, (err, value) => err ? reject(err) : resolve(value));
         stream.end(normalized);
       });
