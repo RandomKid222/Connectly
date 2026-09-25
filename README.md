@@ -1,4 +1,3 @@
-Simple Social Networking Project
 # Connectly
 
 A small social network built with React and Node.js. It supports accounts,
