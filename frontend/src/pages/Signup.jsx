@@ -19,7 +19,13 @@ export default function Signup() {
       await signup(username, email, password);
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.error || 'Signup failed');
+      if (!err.response) {
+        setError('Cannot reach the backend. Check VITE_API_URL in Netlify and CORS_ORIGIN in Render.');
+      } else if (err.response.status === 404) {
+        setError('Signup endpoint not found. Check that VITE_API_URL points to your Render backend.');
+      } else {
+        setError(err.response.data?.error || `Signup failed (HTTP ${err.response.status}).`);
+      }
     } finally {
       setBusy(false);
     }
@@ -33,6 +39,10 @@ export default function Signup() {
           placeholder="Username"
           value={username}
           onChange={e => setUsername(e.target.value)}
+          minLength={3}
+          maxLength={30}
+          pattern="[A-Za-z0-9_]{3,30}"
+          title="3–30 letters, numbers, or underscores"
           required
         />
         <input
@@ -40,13 +50,16 @@ export default function Signup() {
           placeholder="Email"
           value={email}
           onChange={e => setEmail(e.target.value)}
+          maxLength={254}
           required
         />
         <input
           type="password"
-          placeholder="Password (min 6 characters)"
+          placeholder="Password (at least 12 characters)"
           value={password}
           onChange={e => setPassword(e.target.value)}
+          minLength={12}
+          maxLength={128}
           required
         />
         {error && <p className="error">{error}</p>}

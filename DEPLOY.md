@@ -120,6 +120,12 @@ independently of Render restarts. Back up data you care about.
    URL in the address bar. If requests go to Netlify `/api/...` instead of
    Render, check `VITE_API_URL`, then rebuild Netlify. A 500 on startup means
    check Render logs and the Turso/Cloudinary values.
+4. If signup says it cannot reach the backend, check that Netlify's
+   `VITE_API_URL` is the Render origin (not `/api/health`), that Netlify was
+   redeployed after adding the variable, and that Render's `CORS_ORIGIN` is
+   exactly the Netlify origin. Passwords must be at least 12 characters;
+   usernames must be 3–30 letters, numbers, or underscores. The frontend
+   build now stops with an error if `VITE_API_URL` is missing or malformed.
 
 ## Where to put a long secret
 
