@@ -7,8 +7,11 @@ const { requireAuth, JWT_SECRET } = require('../middleware/auth');
 
 const router = express.Router();
 const loginLimit = rateLimit({ windowMs: 15 * 60 * 1000, limit: 10,
+  skipSuccessfulRequests: true,
+  message: { error: 'Too many unsuccessful login attempts. Try again in 15 minutes.' },
   standardHeaders: 'draft-7', legacyHeaders: false });
 const signupLimit = rateLimit({ windowMs: 60 * 60 * 1000, limit: 5,
+  message: { error: 'Too many signup attempts. Try again in an hour.' },
   standardHeaders: 'draft-7', legacyHeaders: false });
 function publicUser(u) {
   const { password_hash, ...rest } = u;

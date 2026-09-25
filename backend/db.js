@@ -49,6 +49,7 @@ const schema = [
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     sender_id INTEGER NOT NULL, receiver_id INTEGER NOT NULL,
     content TEXT NOT NULL, created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    read_at TEXT,
     FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE
   )`
@@ -61,6 +62,13 @@ async function init() {
   if (!cols.rows.some(row => row.name === 'image_public_id')) {
     await client.execute("ALTER TABLE posts ADD COLUMN image_public_id TEXT DEFAULT ''");
   }
+  const messageCols = await client.execute('PRAGMA table_info(messages)');
+  if (!messageCols.rows.some(row => row.name === 'read_at')) {
+    await client.execute('ALTER TABLE messages ADD COLUMN read_at TEXT');
+    // Messages from before this feature were already available to read.
+    await client.execute('UPDATE messages SET read_at = created_at WHERE read_at IS NULL');
+  }
+  await client.execute('CREATE INDEX IF NOT EXISTS idx_messages_unread ON messages(receiver_id, read_at, sender_id)');
 }
 async function all(sql, ...args) {
   return (await client.execute({ sql, args })).rows;

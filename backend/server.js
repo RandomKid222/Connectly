@@ -32,6 +32,9 @@ app.get('/api/health', (req, res) => res.json({ ok: true }));
 
 app.use((err, req, res, next) => {
   console.error(err);
+  if (err.publicMessage && err.status) {
+    return res.status(err.status).json({ error: err.publicMessage });
+  }
   if (err.status === 400 || err.status === 413 || err.name === 'MulterError') {
     return res.status(err.status || 400).json({ error: 'Invalid upload or request' });
   }

@@ -1,7 +1,10 @@
 # Connectly
 
 A small social network built with React and Node.js. It supports accounts,
-profiles, image posts, follows, likes, comments and direct messages.
+profiles, image posts, follows, likes, comments and direct messages. The top
+bar suggests matching users as you type. A red dot marks unread messages in
+the navigation and beside unread conversations; opening a conversation clears
+its dot. While the site is open, new messages appear within about 30 seconds.
 
 Read [DEPLOY.md](DEPLOY.md) for the exact GitHub → Turso/Cloudinary → Render →
 Netlify steps. The backend uses local SQLite and local image files for local

@@ -49,8 +49,12 @@ router.get('/:id/following', async (req, res) => {
   res.json({ following });
 });
 router.get('/', async (req, res) => {
-  const term = typeof req.query.q === 'string' ? req.query.q.slice(0, 50) : '';
-  const users = await db.all('SELECT id, username, avatar_url, bio FROM users WHERE username LIKE ? LIMIT 20', `%${term}%`);
+  const term = typeof req.query.q === 'string' ? req.query.q.trim().slice(0, 50) : '';
+  if (!term) return res.json({ users: [] });
+  const escaped = term.replace(/[!%_]/g, char => `!${char}`);
+  const users = await db.all(`SELECT id, username, avatar_url, bio FROM users
+    WHERE id <> ? AND username LIKE ? ESCAPE '!' ORDER BY username COLLATE NOCASE LIMIT 8`,
+    req.userId, `%${escaped}%`);
   res.json({ users });
 });
 module.exports = router;

@@ -38,11 +38,19 @@ async function saveImage(bytes) {
     throw Object.assign(new Error('Invalid image'), { status: 400 });
   }
   if (remote) {
-    const result = await new Promise((resolve, reject) => {
-      const stream = cloudinary.uploader.upload_stream({ folder: 'connectly',
-        resource_type: 'image', format: 'webp' }, (err, value) => err ? reject(err) : resolve(value));
-      stream.end(normalized);
-    });
+    let result;
+    try {
+      result = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream({ folder: 'connectly',
+          resource_type: 'image', format: 'webp' }, (err, value) => err ? reject(err) : resolve(value));
+        stream.end(normalized);
+      });
+    } catch (err) {
+      console.error('Cloudinary image upload failed:', err);
+      throw Object.assign(new Error('Image storage unavailable'), {
+        status: 502, publicMessage: 'Image upload is temporarily unavailable.'
+      });
+    }
     return { url: result.secure_url, publicId: result.public_id };
   }
   const filename = `${crypto.randomUUID()}.webp`;

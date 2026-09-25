@@ -18,7 +18,13 @@ export default function Login() {
       await login(emailOrUsername, password);
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.error || 'Login failed');
+      if (!err.response) {
+        setError('Cannot reach the server. Please try again shortly.');
+      } else if (err.response.status === 429) {
+        setError(err.response.data?.error || 'Too many login attempts. Try again in 15 minutes.');
+      } else {
+        setError(err.response.data?.error || `Login failed (HTTP ${err.response.status}).`);
+      }
     } finally {
       setBusy(false);
     }

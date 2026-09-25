@@ -5,6 +5,37 @@ hosts the React frontend. Turso stores users, posts, likes, comments and message
 Cloudinary stores uploaded images. The backend starts the database tables itself.
 Use Node 24; the included configuration sets it for both hosts.
 
+## Updating an already deployed site
+
+Unzip the latest project ZIP. Copy its contents into your existing local GitHub
+repository, keeping `backend/`, `frontend/` and `render.yaml` at the top level.
+In GitHub Desktop, review the changes, commit and push them. Render and Netlify
+will rebuild from GitHub. Wait for **both** deployments to finish before
+testing. Your Render and Netlify environment variables stay on those services;
+do not upload real `.env` files or copy secrets into GitHub.
+
+If you use GitHub's website instead, open each matching folder in your
+existing repository and upload the changed files from the new ZIP:
+
+| Repository folder | Files to upload |
+| --- | --- |
+| `backend/` | `db.js` |
+| `backend/routes/` | `messages.js`, `users.js` |
+| `frontend/src/components/` | `Navbar.jsx`, new `UserSearch.jsx` |
+| `frontend/src/context/` | `AuthContext.jsx` |
+| `frontend/src/pages/` | `Messages.jsx` |
+| `frontend/src/` | `styles.css` |
+| repository root | `README.md`, `DEPLOY.md` |
+
+Commit the uploaded files. Keep the folder paths exactly as listed; do not
+upload the ZIP itself. Both services need their new code for unread messages
+to work.
+
+This version automatically adds message read status to the existing Turso
+database when Render starts. Existing accounts and messages remain in place.
+While the site is open, the unread dot and messages update about every 30
+seconds; opening a conversation marks its received messages as read.
+
 ## 1. Which files to put on GitHub
 
 Unzip the project first. The **root of the repository** should show:
@@ -126,6 +157,19 @@ independently of Render restarts. Back up data you care about.
    exactly the Netlify origin. Passwords must be at least 12 characters;
    usernames must be 3–30 letters, numbers, or underscores. The frontend
    build now stops with an error if `VITE_API_URL` is missing or malformed.
+5. If an image post fails, first try a JPG, PNG, or WebP file under 5 MB.
+   The app checks the image contents and re-encodes it before uploading.
+   If a small supported image still fails, open your Render service's
+   **Logs**, attempt the upload again, and look for `Cloudinary image upload
+   failed`. Check the three `CLOUDINARY_` values in Render against Cloudinary's
+   **Settings → API Keys** page. Never share the API secret or token in a
+   screenshot. Image uploads are sent to Cloudinary through the backend;
+   Netlify needs no Cloudinary keys.
+6. Login allows 10 unsuccessful attempts per IP address in 15 minutes. If you
+   reach that limit, wait until the window ends before retrying. `Invalid
+   credentials` means the email/username or password did not match a stored
+   account. Accounts created on the earlier resettable demo database do not
+   automatically appear in Turso. This project has no password reset yet.
 
 ## Where to put a long secret
 

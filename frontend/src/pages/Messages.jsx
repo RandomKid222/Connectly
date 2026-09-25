@@ -1,30 +1,87 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api';
 import { useAuth } from '../context/AuthContext.jsx';
 
 export default function Messages() {
   const { userId } = useParams();
-  const { user: me } = useAuth();
+  const { user: me, refreshUnread } = useAuth();
   const navigate = useNavigate();
   const [conversations, setConversations] = useState([]);
   const [thread, setThread] = useState([]);
   const [otherUser, setOtherUser] = useState(null);
+  const [threadError, setThreadError] = useState('');
   const [text, setText] = useState('');
   const [search, setSearch] = useState('');
   const [results, setResults] = useState([]);
   const bottomRef = useRef(null);
 
-  useEffect(() => {
-    api.get('/messages/conversations').then(res => setConversations(res.data.conversations));
-  }, [userId]);
+  const loadConversations = useCallback(async () => {
+    try {
+      const res = await api.get('/messages/conversations');
+      setConversations(res.data.conversations);
+    } catch {
+      // The next refresh will retry if the backend is waking up.
+    }
+  }, []);
 
   useEffect(() => {
-    if (!userId) { setThread([]); setOtherUser(null); return; }
-    api.get(`/messages/${userId}`).then(res => setThread(res.data.messages));
-    const existing = conversations.find(c => String(c.id) === String(userId));
-    if (existing) setOtherUser(existing);
-  }, [userId, conversations]);
+    loadConversations();
+    const timer = setInterval(() => {
+      if (document.visibilityState === 'visible') loadConversations();
+    }, 30000);
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') loadConversations();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, [loadConversations, userId]);
+
+  useEffect(() => {
+    if (!userId) {
+      setThread([]);
+      setOtherUser(null);
+      setThreadError('');
+      return;
+    }
+    setThread([]);
+    setOtherUser(null);
+    setThreadError('');
+    let cancelled = false;
+    let busy = false;
+    const loadThread = async () => {
+      if (busy || document.visibilityState !== 'visible') return;
+      busy = true;
+      try {
+        const res = await api.get(`/messages/${userId}`);
+        if (cancelled) return;
+        setThread(res.data.messages);
+        setOtherUser(res.data.otherUser);
+        setThreadError('');
+        const unread = res.data.messages.filter(message =>
+          Number(message.sender_id) === Number(userId) && !message.read_at);
+        if (unread.length && document.visibilityState === 'visible') {
+          await api.put(`/messages/${userId}/read`, { upToId: unread.at(-1).id });
+          if (!cancelled) { refreshUnread(); loadConversations(); }
+        }
+      } catch {
+        if (!cancelled) setThreadError('Could not load this conversation. Try again shortly.');
+      } finally {
+        busy = false;
+      }
+    };
+    loadThread();
+    const timer = setInterval(loadThread, 30000);
+    document.addEventListener('visibilitychange', loadThread);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', loadThread);
+    };
+  }, [userId, refreshUnread, loadConversations]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -32,46 +89,67 @@ export default function Messages() {
 
   useEffect(() => {
     if (!search.trim()) { setResults([]); return; }
-    const t = setTimeout(() => {
-      api.get(`/users?q=${encodeURIComponent(search)}`).then(res => setResults(res.data.users));
+    let active = true;
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      try {
+        const res = await api.get('/users', { params: { q: search.trim() }, signal: controller.signal });
+        if (active) setResults(res.data.users);
+      } catch {
+        if (active) setResults([]);
+      }
     }, 250);
-    return () => clearTimeout(t);
+    return () => { active = false; clearTimeout(timer); controller.abort(); };
   }, [search]);
 
-  async function send(e) {
-    e.preventDefault();
-    if (!text.trim()) return;
-    const res = await api.post(`/messages/${userId}`, { content: text });
-    setThread([...thread, res.data.message]);
-    setText('');
+  async function send(event) {
+    event.preventDefault();
+    if (!text.trim() || !userId) return;
+    try {
+      const res = await api.post(`/messages/${userId}`, { content: text });
+      setThread(current => [...current, res.data.message]);
+      setText('');
+      setThreadError('');
+      loadConversations();
+    } catch {
+      setThreadError('Could not send your message. Please try again.');
+    }
   }
 
   return (
     <div className="messages-layout">
       <aside className="conversation-list">
         <input
+          aria-label="Search people to message"
           placeholder="Search people..."
+          maxLength={50}
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={event => { setSearch(event.target.value); setResults([]); }}
         />
         {results.length > 0 && (
           <div className="search-results">
-            {results.filter(u => u.id !== me.id).map(u => (
-              <div key={u.id} className="conversation-item" onClick={() => { navigate(`/messages/${u.id}`); setSearch(''); }}>
-                {u.username}
-              </div>
+            {results.filter(user => user.id !== me.id).map(user => (
+              <button key={user.id} type="button" className="conversation-item"
+                onClick={() => { navigate(`/messages/${user.id}`); setSearch(''); }}>
+                {user.username}
+              </button>
             ))}
           </div>
         )}
-        {conversations.map(c => (
-          <div
-            key={c.id}
-            className={`conversation-item ${String(c.id) === userId ? 'active' : ''}`}
-            onClick={() => navigate(`/messages/${c.id}`)}
+        {conversations.map(conversation => (
+          <button
+            type="button"
+            key={conversation.id}
+            className={`conversation-item ${String(conversation.id) === userId ? 'active' : ''}`}
+            onClick={() => navigate(`/messages/${conversation.id}`)}
           >
-            <div className="conversation-name">{c.username}</div>
-            <div className="conversation-preview">{c.lastMessage}</div>
-          </div>
+            <span className="conversation-name-row">
+              <span className="conversation-name">{conversation.username}</span>
+              {Number(conversation.unreadCount) > 0 &&
+                <span className="unread-dot" aria-label={`${conversation.unreadCount} unread messages`} />}
+            </span>
+            <span className="conversation-preview">{conversation.lastMessage}</span>
+          </button>
         ))}
         {conversations.length === 0 && <p className="muted">Search for someone to start chatting.</p>}
       </aside>
@@ -82,10 +160,11 @@ export default function Messages() {
         ) : (
           <>
             <div className="thread-header">{otherUser?.username || 'Conversation'}</div>
+            {threadError && <p className="error thread-error" role="alert">{threadError}</p>}
             <div className="thread-messages">
-              {thread.map(m => (
-                <div key={m.id} className={`bubble ${m.sender_id === me.id ? 'mine' : 'theirs'}`}>
-                  {m.content}
+              {thread.map(message => (
+                <div key={message.id} className={`bubble ${message.sender_id === me.id ? 'mine' : 'theirs'}`}>
+                  {message.content}
                 </div>
               ))}
               <div ref={bottomRef} />
@@ -93,7 +172,8 @@ export default function Messages() {
             <form className="thread-input" onSubmit={send}>
               <input
                 value={text}
-                onChange={e => setText(e.target.value)}
+                maxLength={5000}
+                onChange={event => setText(event.target.value)}
                 placeholder="Type a message..."
               />
               <button type="submit">Send</button>
