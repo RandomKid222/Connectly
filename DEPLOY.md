@@ -19,12 +19,13 @@ existing repository and upload the changed files from the new ZIP:
 
 | Repository folder | Files to upload |
 | --- | --- |
-| `backend/` | `db.js`, `media.js` |
+| `backend/` | `db.js`, new `email.js`, `media.js`, `.env.example` |
+| `backend/middleware/` | `auth.js` |
 | `backend/routes/` | `auth.js`, `messages.js`, `posts.js`, `users.js` |
 | `frontend/src/components/` | new `Avatar.jsx`, `Navbar.jsx`, `PostCard.jsx`, `CommentSection.jsx`, `UserSearch.jsx` |
 | `frontend/src/context/` | `AuthContext.jsx` |
-| `frontend/src/pages/` | `Feed.jsx`, `Messages.jsx`, `Profile.jsx` |
-| `frontend/src/` | `styles.css` |
+| `frontend/src/pages/` | `Feed.jsx`, new `ForgotPassword.jsx`, `Login.jsx`, `Messages.jsx`, `Profile.jsx`, new `ResetPassword.jsx` |
+| `frontend/src/` | `App.jsx`, `styles.css` |
 | `frontend/` | `index.html` |
 | `frontend/public/` | `favicon.svg`, `favicon-32.png`, `apple-touch-icon.png`, `social-card.svg`, `social-card.png` |
 | repository root | `render.yaml`, `README.md`, `DEPLOY.md` |
@@ -38,7 +39,8 @@ Netlify site or add your own domain, update the canonical, `og:url`, `og:image`,
 and `twitter:image` addresses in `frontend/index.html`, plus `CORS_ORIGIN` in
 `render.yaml` and the Render service's Environment page.
 
-This version automatically adds message read status and profile-photo tracking
+This version automatically adds password reset tokens and a login version to
+the existing Turso database when Render starts. It also adds message read status and profile-photo tracking
 to the existing Turso database when Render starts. Existing accounts and
 messages remain in place. Profile photos use your existing Cloudinary settings;
 no additional environment variable is needed.
@@ -119,6 +121,8 @@ independently of Render restarts. Back up data you care about.
    | `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name. |
    | `CLOUDINARY_API_KEY` | Cloudinary API key. |
    | `CLOUDINARY_API_SECRET` | Cloudinary API secret. |
+   | `BREVO_API_KEY` | Secret API key from Brevo, for reset emails. |
+   | `EMAIL_FROM` | The verified sender email address in Brevo. |
 
    `render.yaml` sets the public `CORS_ORIGIN` to
    `https://connectlyplace.netlify.app`. Render generates `JWT_SECRET`
@@ -183,7 +187,42 @@ independently of Render restarts. Back up data you care about.
    reach that limit, wait until the window ends before retrying. `Invalid
    credentials` means the email/username or password did not match a stored
    account. Accounts created on the earlier resettable demo database do not
-   automatically appear in Turso. This project has no password reset yet.
+   automatically appear in Turso. Use **Forgot password?** on the login page
+   if you can receive mail at the address saved on your account.
+
+## 6. Turn on password reset email
+
+The reset flow uses [Brevo transactional email](https://developers.brevo.com/reference/send-transac-email)
+over HTTPS. Brevo advertises a free tier with 300 emails per day, subject to
+its limits and account activation. It uses your existing Netlify URL from
+`CORS_ORIGIN` in the emailed link. Email delivery is unavailable until you
+complete the following setup; the rest of the app keeps running.
+
+1. In [Brevo](https://app.brevo.com/), create an account. In **Settings →
+   Senders, Domains, IPs → Senders**, add a sender, then verify the address with
+   the code delivered to it. Use an address whose mailbox you control. Brevo
+   recommends authenticating a domain you own for reliable delivery; a free
+   email address may have its visible sender rewritten or be filtered. You
+   cannot authenticate the `netlify.app` domain as your own. Confirm that
+   transactional sending is active on your Brevo account.
+2. In Brevo, open **SMTP & API → API Keys**, create/copy an **API key** (not an
+   SMTP key or password). Do not put it in GitHub, Netlify, or `.env.example`.
+3. In Render, open your existing **social-network-backend** web service →
+   **Environment** → **Add Environment Variable**. Set `BREVO_API_KEY` to the
+   Brevo API key, and `EMAIL_FROM` to the exact verified sender address.
+   Choose **Save, deploy** and wait for the backend deploy to finish. On an
+   existing Blueprint you must add these in Render manually; a later
+   `sync: false` entry in `render.yaml` does not fill them in automatically.
+4. Push the changed project files to GitHub and wait for both Render and
+   Netlify to deploy. The backend schema migration keeps existing users and
+   posts. The link page is served by the existing `public/_redirects` rule.
+5. Open **Log in → Forgot password?** on your Netlify site. Enter an account's
+   email, then check that inbox and spam folder. The link lasts 30 minutes and
+   works once; using it also logs out older sessions when they make their next
+   API request. If no email arrives, check Render **Logs** for a password reset
+   email failure and Brevo's transactional email activity, verified sender,
+   sending activation, and daily quota. The page returns the same message for
+   both known and unknown email addresses.
 
 ## Where to put a long secret
 
@@ -191,7 +230,7 @@ independently of Render restarts. Back up data you care about.
 For local development you may copy it to `backend/.env`, then replace
 `JWT_SECRET` there with a unique random value at least 32 characters long.
 For deployment, Render generates `JWT_SECRET` for you; there is no need to set
-it a second time. Real Turso and Cloudinary credentials also go in Render's
+it a second time. Real Turso, Cloudinary and Brevo credentials also go in Render's
 Environment page, never in `.env.example`. `VITE_API_URL` is a public address,
 not a secret. Never use a `VITE_` variable for a credential.
 
@@ -202,13 +241,14 @@ and JSON sizes, rate limits requests, sets security headers, checks and
 re-encodes image bytes, and returns generic internal errors. Passwords are
 hashed. CORS controls browser access from another site; it does **not** make a
 public API private. Rate limits are in memory, so they reset when the backend
-restarts. JWTs last seven days and cannot be revoked individually; tokens in
+restarts. Reset links are stored only as hashes, expire in 30 minutes, work once,
+and invalidate the account's older sessions. JWTs last seven days; tokens in
 `localStorage` remain vulnerable if an attacker can run script in the page.
 Do not render untrusted HTML with `dangerouslySetInnerHTML`.
 
 This is appropriate for a small test with people you know. It is not yet a
 fully moderated public social network: there is no report/block workflow,
-email verification, account recovery, automated backup, or shared rate limit
+email verification, automated backup, or shared rate limit
 across instances. Direct messages are not end-to-end encrypted. Review those
 features and privacy handling before inviting strangers or storing sensitive
 information. Run `npm audit` periodically in **both** package directories.

@@ -16,6 +16,7 @@ const schema = [
     id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE NOT NULL,
     email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL,
     bio TEXT DEFAULT '', avatar_url TEXT DEFAULT '', avatar_public_id TEXT DEFAULT '',
+    token_version INTEGER NOT NULL DEFAULT 0,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP
   )`,
   `CREATE TABLE IF NOT EXISTS posts (
@@ -52,6 +53,11 @@ const schema = [
     read_at TEXT,
     FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE
+  )`,
+  `CREATE TABLE IF NOT EXISTS password_reset_tokens (
+    token_hash TEXT PRIMARY KEY, user_id INTEGER NOT NULL UNIQUE,
+    expires_at INTEGER NOT NULL, created_at INTEGER NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
   )`
 ];
 
@@ -65,6 +71,9 @@ async function init() {
   const userCols = await client.execute('PRAGMA table_info(users)');
   if (!userCols.rows.some(row => row.name === 'avatar_public_id')) {
     await client.execute("ALTER TABLE users ADD COLUMN avatar_public_id TEXT DEFAULT ''");
+  }
+  if (!userCols.rows.some(row => row.name === 'token_version')) {
+    await client.execute('ALTER TABLE users ADD COLUMN token_version INTEGER NOT NULL DEFAULT 0');
   }
   const messageCols = await client.execute('PRAGMA table_info(messages)');
   if (!messageCols.rows.some(row => row.name === 'read_at')) {
@@ -83,4 +92,26 @@ async function run(sql, ...args) {
   return { lastInsertRowid: result.lastInsertRowid ? Number(result.lastInsertRowid) : null,
     changes: result.rowsAffected };
 }
-module.exports = { init, get, all, run };
+async function resetPassword(tokenHash, passwordHash, now) {
+  const tx = await client.transaction('write');
+  try {
+    const result = await tx.execute({
+      sql: 'DELETE FROM password_reset_tokens WHERE token_hash = ? AND expires_at > ? RETURNING user_id',
+      args: [tokenHash, now]
+    });
+    if (!result.rows.length) {
+      await tx.rollback();
+      return false;
+    }
+    await tx.execute({
+      sql: 'UPDATE users SET password_hash = ?, token_version = token_version + 1 WHERE id = ?',
+      args: [passwordHash, result.rows[0].user_id]
+    });
+    await tx.commit();
+    return true;
+  } catch (err) {
+    await tx.rollback().catch(() => {});
+    throw err;
+  }
+}
+module.exports = { init, get, all, run, resetPassword };

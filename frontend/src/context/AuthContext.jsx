@@ -23,6 +23,19 @@ export function AuthProvider({ children }) {
       .finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => {
+    const interceptor = api.interceptors.response.use(response => response, error => {
+      const token = localStorage.getItem('token');
+      if (error.response?.status === 401 && token &&
+          error.config?.headers?.Authorization === `Bearer ${token}`) {
+        localStorage.removeItem('token');
+        setUser(null);
+      }
+      return Promise.reject(error);
+    });
+    return () => api.interceptors.response.eject(interceptor);
+  }, []);
+
   const refreshUnread = useCallback(async () => {
     const requestedFor = userIdRef.current;
     if (!requestedFor) return;

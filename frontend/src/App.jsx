@@ -4,6 +4,8 @@ import { useAuth } from './context/AuthContext.jsx';
 import Navbar from './components/Navbar.jsx';
 import Login from './pages/Login.jsx';
 import Signup from './pages/Signup.jsx';
+import ForgotPassword from './pages/ForgotPassword.jsx';
+import ResetPassword from './pages/ResetPassword.jsx';
 import Feed from './pages/Feed.jsx';
 import Profile from './pages/Profile.jsx';
 import Messages from './pages/Messages.jsx';
@@ -26,6 +28,8 @@ export default function App() {
         <Routes>
           <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
           <Route path="/signup" element={user ? <Navigate to="/" /> : <Signup />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/" element={<PrivateRoute><Feed /></PrivateRoute>} />
           <Route path="/profile/:username" element={<PrivateRoute><Profile /></PrivateRoute>} />
           <Route path="/messages" element={<PrivateRoute><Messages /></PrivateRoute>} />

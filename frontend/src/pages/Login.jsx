@@ -50,6 +50,7 @@ export default function Login() {
         {error && <p className="error">{error}</p>}
         <button type="submit" disabled={busy}>{busy ? 'Logging in...' : 'Log in'}</button>
       </form>
+      <p><Link to="/forgot-password">Forgot password?</Link></p>
       <p>No account? <Link to="/signup">Sign up</Link></p>
     </div>
   );

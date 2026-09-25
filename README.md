@@ -10,6 +10,11 @@ its dot. While the site is open, the feed, profiles, and visible comments
 refresh about every 30 seconds. Open chats check for messages every 15 seconds;
 the unread dot checks about every 30 seconds.
 
+Log in → **Forgot password?** emails a 30-minute, single-use reset link once
+you set up Brevo on Render. See [DEPLOY.md](DEPLOY.md#6-turn-on-password-reset-email)
+for the sender verification and environment variable steps. Resetting a password
+also invalidates old login sessions.
+
 On your own profile, use **Add photo** or **Change photo** to upload a JPG,
 PNG, or WebP image under 5 MB. Profile pictures appear beside names across
 the app and can be removed. Production photos use the existing Cloudinary
