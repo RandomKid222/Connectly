@@ -5,6 +5,10 @@ hosts the React frontend. Turso stores users, posts, likes, comments and message
 Cloudinary stores uploaded images. The backend starts the database tables itself.
 Use Node 24; the included configuration sets it for both hosts.
 
+The main address is `https://connectly.lol/`. `contactly.lol` is an alternate
+domain that redirects to it. Follow [DOMAIN_SETUP.md](DOMAIN_SETUP.md) to
+finish DNS and HTTPS for both purchased domains before deploying this ZIP.
+
 ## Updating an already deployed site
 
 Unzip the latest project ZIP. Copy its contents into your existing local GitHub
@@ -27,15 +31,16 @@ existing repository and upload the changed files from the new ZIP:
 | `frontend/src/pages/` | `Feed.jsx`, new `ForgotPassword.jsx`, `Login.jsx`, `Messages.jsx`, `Profile.jsx`, new `ResetPassword.jsx` |
 | `frontend/src/` | `App.jsx`, `styles.css` |
 | `frontend/` | `index.html` |
-| `frontend/public/` | `favicon.svg`, `favicon-32.png`, `apple-touch-icon.png`, `social-card.svg`, `social-card.png` |
-| repository root | `render.yaml`, `README.md`, `DEPLOY.md` |
+| `frontend/public/` | `_redirects`, `favicon.svg`, `favicon-32.png`, `apple-touch-icon.png`, `social-card.svg`, `social-card.png` |
+| repository root | `render.yaml`, `README.md`, `DEPLOY.md`, new `DOMAIN_SETUP.md` |
 
 Commit the uploaded files. Keep the folder paths exactly as listed; do not
 upload the ZIP itself. Both services need their new code for unread messages
 to work.
 
-The public URL is `https://connectlyplace.netlify.app/`. If you rename the
-Netlify site or add your own domain, update the canonical, `og:url`, `og:image`,
+The public URL is `https://connectly.lol/`. `connectlyplace.netlify.app`
+remains the project's Netlify hostname and the DNS CNAME target. If you change
+the primary address, update the canonical, `og:url`, `og:image`,
 and `twitter:image` addresses in `frontend/index.html`, plus `CORS_ORIGIN` in
 `render.yaml` and the Render service's Environment page.
 
@@ -125,7 +130,7 @@ independently of Render restarts. Back up data you care about.
    | `EMAIL_FROM` | The verified sender email address in Brevo. |
 
    `render.yaml` sets the public `CORS_ORIGIN` to
-   `https://connectlyplace.netlify.app`. Render generates `JWT_SECRET`
+   `https://connectly.lol`. Render generates `JWT_SECRET`
    automatically. Do not paste the example value
    from `.env.example`. `NODE_ENV=production` and `NODE_VERSION=24` are also set
    by the Blueprint. Do not put a real secret in `render.yaml` or the frontend.
@@ -148,17 +153,21 @@ independently of Render restarts. Back up data you care about.
    Render URL from step 3, without `/api` or a trailing slash. Example:
    `https://social-network-backend-xxxx.onrender.com`. This URL is public and
    is the only variable that belongs on Netlify.
-4. Deploy at `https://connectlyplace.netlify.app/`. `frontend/public/_redirects`
-   makes refreshes on `/profile/...` and `/messages/...` load correctly.
+4. The existing project has the hostname `connectlyplace.netlify.app`.
+   Configure `connectly.lol` as its primary domain and `contactly.lol` as an
+   alias using [DOMAIN_SETUP.md](DOMAIN_SETUP.md). Complete DNS and HTTPS
+   before deploying the new `_redirects` file, which sends the old hostname
+   and domain aliases to `https://connectly.lol/`.
+   `frontend/public/_redirects` also makes refreshes on `/profile/...` and `/messages/...` load correctly.
    If you change `VITE_API_URL` later, trigger a new frontend deploy.
 
 ## 5. Connect and test
 
 1. Render → your backend → **Environment**: confirm `CORS_ORIGIN` is exactly
-   `https://connectlyplace.netlify.app` (no trailing slash). If it still shows
+   `https://connectly.lol` (no trailing slash). If it still shows
    the old URL, change it and choose **Save and deploy**. The committed
    `render.yaml` also contains the new value for Blueprint syncs.
-2. Visit the Netlify URL. Sign up with a test account; create a post with an
+2. Visit `https://connectly.lol/`. Sign up with a test account; create a post with an
    image; upload a profile photo from your profile; refresh and check both
    remain. Test login, like, comment, follow, and messaging with a second test
    account. A free Render web service may
@@ -170,7 +179,7 @@ independently of Render restarts. Back up data you care about.
 4. If signup says it cannot reach the backend, check that Netlify's
    `VITE_API_URL` is the Render origin (not `/api/health`), that Netlify was
    redeployed after adding the variable, and that Render's `CORS_ORIGIN` is
-   exactly the Netlify origin. Passwords must be at least 12 characters;
+   exactly `https://connectly.lol`. Passwords must be at least 12 characters;
    usernames must be 3–30 letters, numbers, or underscores. The frontend
    build now stops with an error if `VITE_API_URL` is missing or malformed.
 5. If an image post fails, first try a JPG, PNG, or WebP file under 5 MB.
@@ -194,18 +203,18 @@ independently of Render restarts. Back up data you care about.
 
 The reset flow uses [Brevo transactional email](https://developers.brevo.com/reference/send-transac-email)
 over HTTPS. Brevo advertises a free tier with 300 emails per day, subject to
-its limits and account activation. It uses your existing Netlify URL from
+its limits and account activation. It uses your main website URL from
 `CORS_ORIGIN` in the emailed link. Email delivery is unavailable until you
 complete the following setup; the rest of the app keeps running.
 
 1. In [Brevo](https://app.brevo.com/), create an account. In **Settings →
    Senders, Domains, IPs → Senders**, add a sender, then verify the address with
-   the code delivered to it. Use an address whose mailbox you control. Brevo
-   recommends authenticating a domain you own for reliable delivery; a free
-   email address may have its visible sender rewritten or be filtered. You
-   cannot authenticate the `netlify.app` domain as your own. Confirm that
-   transactional sending is active on your Brevo account.
-2. In Brevo, open **SMTP & API → API Keys**, create/copy an **API key** (not an
+   the code delivered to it, or use a sender on your authenticated domain.
+   Authenticate `connectly.lol` with the DNS records Brevo shows you, as
+   described in [DOMAIN_SETUP.md](DOMAIN_SETUP.md). You cannot authenticate
+   the `netlify.app` domain as your own. Confirm that transactional sending
+   is active on your Brevo account.
+2. In Brevo, open **Settings → SMTP & API → API Keys & MCP**, create/copy an **API key** (not an
    SMTP key or password). Do not put it in GitHub, Netlify, or `.env.example`.
 3. In Render, open your existing **social-network-backend** web service →
    **Environment** → **Add Environment Variable**. Set `BREVO_API_KEY` to the

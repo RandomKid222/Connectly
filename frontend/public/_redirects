@@ -1,1 +1,12 @@
+# Assign these domains to this Netlify project and finish DNS/HTTPS before deploying.
+# Domain redirects must come before the React single-page app fallback.
+http://contactly.lol/* https://connectly.lol/:splat 301!
+https://contactly.lol/* https://connectly.lol/:splat 301!
+http://www.contactly.lol/* https://connectly.lol/:splat 301!
+https://www.contactly.lol/* https://connectly.lol/:splat 301!
+http://www.connectly.lol/* https://connectly.lol/:splat 301!
+https://www.connectly.lol/* https://connectly.lol/:splat 301!
+http://connectly.lol/* https://connectly.lol/:splat 301!
+http://connectlyplace.netlify.app/* https://connectly.lol/:splat 301!
+https://connectlyplace.netlify.app/* https://connectly.lol/:splat 301!
 /* /index.html 200

@@ -1,6 +1,9 @@
 # Connectly
 
-Public site: [connectlyplace.netlify.app](https://connectlyplace.netlify.app/).
+Primary public site: [connectly.lol](https://connectly.lol/).
+The alternate domain [contactly.lol](https://contactly.lol/) redirects to it.
+Follow [DOMAIN_SETUP.md](DOMAIN_SETUP.md) to connect both GoDaddy domains to
+your existing Netlify project before deploying this version.
 
 A small social network built with React and Node.js. It supports accounts,
 profiles, profile photos, image posts, follows, likes, comments and direct messages. The top
