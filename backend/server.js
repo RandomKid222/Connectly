@@ -10,6 +10,8 @@ const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const postRoutes = require('./routes/posts');
 const messageRoutes = require('./routes/messages');
+const settingsRoutes = require('./routes/settings');
+const notificationRoutes = require('./routes/notifications');
 
 if (process.env.NODE_ENV === 'production' && !process.env.CORS_ORIGIN) {
   throw new Error('CORS_ORIGIN is required in production');
@@ -28,12 +30,17 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/messages', messageRoutes);
+app.use('/api/settings', settingsRoutes);
+app.use('/api/notifications', notificationRoutes);
 app.get('/api/health', (req, res) => res.json({ ok: true }));
 
 app.use((err, req, res, next) => {
   console.error(err);
   if (err.publicMessage && err.status) {
     return res.status(err.status).json({ error: err.publicMessage });
+  }
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    return res.status(413).json({ error: 'The photo must be at most 5 MB' });
   }
   if (err.status === 400 || err.status === 413 || err.name === 'MulterError') {
     return res.status(err.status || 400).json({ error: 'Invalid upload or request' });

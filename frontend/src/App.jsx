@@ -9,6 +9,8 @@ import ResetPassword from './pages/ResetPassword.jsx';
 import Feed from './pages/Feed.jsx';
 import Profile from './pages/Profile.jsx';
 import Messages from './pages/Messages.jsx';
+import Thread from './pages/Thread.jsx';
+import Settings from './pages/Settings.jsx';
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -34,6 +36,8 @@ export default function App() {
           <Route path="/profile/:username" element={<PrivateRoute><Profile /></PrivateRoute>} />
           <Route path="/messages" element={<PrivateRoute><Messages /></PrivateRoute>} />
           <Route path="/messages/:userId" element={<PrivateRoute><Messages /></PrivateRoute>} />
+          <Route path="/threads/:id" element={<PrivateRoute><Thread /></PrivateRoute>} />
+          <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </div>

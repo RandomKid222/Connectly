@@ -17,11 +17,18 @@ const schema = [
     email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL,
     bio TEXT DEFAULT '', avatar_url TEXT DEFAULT '', avatar_public_id TEXT DEFAULT '',
     token_version INTEGER NOT NULL DEFAULT 0,
+    profile_visibility TEXT NOT NULL DEFAULT 'public',
+    message_permission TEXT NOT NULL DEFAULT 'everyone',
+    searchable INTEGER NOT NULL DEFAULT 1,
+    show_in_explore INTEGER NOT NULL DEFAULT 1,
+    share_follow_lists INTEGER NOT NULL DEFAULT 1,
+    theme TEXT NOT NULL DEFAULT 'system',
     created_at TEXT DEFAULT CURRENT_TIMESTAMP
   )`,
   `CREATE TABLE IF NOT EXISTS posts (
     id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL,
     content TEXT DEFAULT '', image_url TEXT DEFAULT '', image_public_id TEXT DEFAULT '',
+    title TEXT NOT NULL DEFAULT '', image_private INTEGER NOT NULL DEFAULT 0,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
   )`,
@@ -42,6 +49,7 @@ const schema = [
   `CREATE TABLE IF NOT EXISTS comments (
     id INTEGER PRIMARY KEY AUTOINCREMENT, post_id INTEGER NOT NULL,
     user_id INTEGER NOT NULL, content TEXT NOT NULL,
+    parent_id INTEGER REFERENCES comments(id) ON DELETE CASCADE,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -49,7 +57,8 @@ const schema = [
   `CREATE TABLE IF NOT EXISTS messages (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     sender_id INTEGER NOT NULL, receiver_id INTEGER NOT NULL,
-    content TEXT NOT NULL, created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    content TEXT NOT NULL, image_url TEXT NOT NULL DEFAULT '',
+    image_public_id TEXT NOT NULL DEFAULT '', created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     read_at TEXT,
     FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE
@@ -58,6 +67,22 @@ const schema = [
     token_hash TEXT PRIMARY KEY, user_id INTEGER NOT NULL UNIQUE,
     expires_at INTEGER NOT NULL, created_at INTEGER NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  )`,
+  `CREATE TABLE IF NOT EXISTS follow_requests (
+    follower_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    following_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (follower_id, following_id)
+  )`,
+  `CREATE TABLE IF NOT EXISTS notifications (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    actor_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    kind TEXT NOT NULL,
+    post_id INTEGER REFERENCES posts(id) ON DELETE CASCADE,
+    comment_id INTEGER REFERENCES comments(id) ON DELETE CASCADE,
+    message_id INTEGER REFERENCES messages(id) ON DELETE CASCADE,
+    read_at TEXT, created_at TEXT DEFAULT CURRENT_TIMESTAMP
   )`
 ];
 
@@ -82,6 +107,29 @@ async function init() {
     await client.execute('UPDATE messages SET read_at = created_at WHERE read_at IS NULL');
   }
   await client.execute('CREATE INDEX IF NOT EXISTS idx_messages_unread ON messages(receiver_id, read_at, sender_id)');
+  const additions = {
+    users: [
+      ["profile_visibility", "TEXT NOT NULL DEFAULT 'public'"],
+      ["message_permission", "TEXT NOT NULL DEFAULT 'everyone'"],
+      ["searchable", "INTEGER NOT NULL DEFAULT 1"],
+      ["show_in_explore", "INTEGER NOT NULL DEFAULT 1"],
+      ["share_follow_lists", "INTEGER NOT NULL DEFAULT 1"],
+      ["theme", "TEXT NOT NULL DEFAULT 'system'"]
+    ],
+    posts: [["title", "TEXT NOT NULL DEFAULT ''"], ["image_private", "INTEGER NOT NULL DEFAULT 0"]],
+    comments: [["parent_id", "INTEGER REFERENCES comments(id) ON DELETE CASCADE"]],
+    messages: [["image_url", "TEXT NOT NULL DEFAULT ''"], ["image_public_id", "TEXT NOT NULL DEFAULT ''"]]
+  };
+  for (const [table, columns] of Object.entries(additions)) {
+    const existing = new Set((await client.execute('PRAGMA table_info(' + table + ')')).rows.map(row => row.name));
+    for (const [name, definition] of columns) {
+      if (!existing.has(name)) await client.execute('ALTER TABLE ' + table + ' ADD COLUMN ' + name + ' ' + definition);
+    }
+  }
+  await client.execute('CREATE INDEX IF NOT EXISTS idx_comments_thread ON comments(post_id, parent_id, id)');
+  await client.execute('CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, read_at, id)');
+  await client.execute('CREATE UNIQUE INDEX IF NOT EXISTS idx_notifications_event ON notifications ' +
+    '(user_id, actor_id, kind, COALESCE(post_id, 0), COALESCE(comment_id, 0), COALESCE(message_id, 0))');
 }
 async function all(sql, ...args) {
   return (await client.execute({ sql, args })).rows;
@@ -114,4 +162,5 @@ async function resetPassword(tokenHash, passwordHash, now) {
     throw err;
   }
 }
-module.exports = { init, get, all, run, resetPassword };
+async function batch(statements) { return client.batch(statements, 'write'); }
+module.exports = { init, get, all, run, batch, resetPassword };

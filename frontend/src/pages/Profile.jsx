@@ -4,6 +4,8 @@ import api from '../api';
 import { useAuth } from '../context/AuthContext.jsx';
 import PostCard from '../components/PostCard.jsx';
 import Avatar from '../components/Avatar.jsx';
+import PostComposer from '../components/PostComposer.jsx';
+import LocalTime from '../components/LocalTime.jsx';
 
 export default function Profile() {
   const { username } = useParams();
@@ -17,6 +19,9 @@ export default function Profile() {
   const [loadError, setLoadError] = useState('');
   const [avatarBusy, setAvatarBusy] = useState(false);
   const [avatarError, setAvatarError] = useState('');
+  const [followBusy, setFollowBusy] = useState(false);
+  const [followList, setFollowList] = useState(null);
+  const [followListError, setFollowListError] = useState('');
   const profileMutation = useRef(0);
   const avatarInput = useRef(null);
 
@@ -31,6 +36,7 @@ export default function Profile() {
     setEditing(false);
     setLoadError('');
     setAvatarError('');
+    setFollowList(null);
     const refresh = async () => {
       if (busy) return;
       busy = true;
@@ -68,22 +74,34 @@ export default function Profile() {
   }, [username]);
 
   async function toggleFollow() {
-    if (profile.isFollowing) {
+    if (followBusy) return;
+    setFollowBusy(true);
+    setAvatarError('');
+    try {
+    if (profile.isFollowing || profile.followRequested) {
       await api.delete(`/users/${profile.id}/follow`);
       profileMutation.current += 1;
-      setProfile(current => ({ ...current, isFollowing: false, followerCount: current.followerCount - 1 }));
+      setProfile(current => ({ ...current, isFollowing: false, followRequested: false,
+        followerCount: current.isFollowing && current.followerCount !== null ? current.followerCount - 1 : current.followerCount }));
     } else {
-      await api.post(`/users/${profile.id}/follow`);
+      const response = await api.post(`/users/${profile.id}/follow`);
       profileMutation.current += 1;
-      setProfile(current => ({ ...current, isFollowing: true, followerCount: current.followerCount + 1 }));
+      setProfile(current => ({ ...current, isFollowing: response.data.following, followRequested: response.data.requested,
+        followerCount: response.data.following && current.followerCount !== null ? current.followerCount + 1 : current.followerCount }));
     }
+    const refreshed = await api.get('/users/' + username);
+    setProfile(refreshed.data.user);
+    const postResult = await api.get('/posts/user/' + refreshed.data.user.id);
+    setPosts(postResult.data.posts);
+    } catch (error) { setAvatarError(error.response?.data?.error || 'Could not update the follow.'); }
+    finally { setFollowBusy(false); }
   }
 
   async function saveBio() {
     const res = await api.put('/users/me/update', { bio: bioDraft });
     profileMutation.current += 1;
     setProfile(current => ({ ...current, bio: res.data.user.bio }));
-    setUser({ ...me, bio: res.data.user.bio });
+    setUser(current => ({ ...current, bio: res.data.user.bio }));
     setEditing(false);
   }
 
@@ -133,6 +151,20 @@ export default function Profile() {
   function handleDelete(id) {
     profileMutation.current += 1;
     setPosts(current => current.filter(post => post.id !== id));
+    setProfile(current => ({ ...current, postCount: Math.max(0, current.postCount - 1) }));
+  }
+
+  function posted(post) {
+    profileMutation.current += 1;
+    setPosts(current => [post, ...current.filter(item => item.id !== post.id)]);
+    setProfile(current => ({ ...current, postCount: current.postCount + 1 }));
+  }
+  async function showFollowList(direction) {
+    setFollowListError('');
+    try {
+      const response = await api.get('/users/' + profile.id + '/' + direction);
+      setFollowList({ direction, users: response.data[direction] });
+    } catch (error) { setFollowListError(error.response?.data?.error || 'Could not load this list.'); }
   }
 
   if (loading) return <p className="muted">Loading profile...</p>;
@@ -145,6 +177,7 @@ export default function Profile() {
           <Avatar url={profile.avatar_url} username={profile.username} className="profile-avatar" />
           <div>
             <h1>{profile.username}</h1>
+            <p className="muted">Joined <LocalTime value={profile.created_at} /></p>
             {profile.isSelf && (
               <div className="avatar-actions">
                 <input ref={avatarInput} type="file" accept="image/jpeg,image/png,image/webp"
@@ -162,7 +195,7 @@ export default function Profile() {
         {profile.isSelf ? (
           editing ? (
             <div className="bio-edit">
-              <textarea value={bioDraft} onChange={e => setBioDraft(e.target.value)} />
+              <textarea maxLength={5000} value={bioDraft} onChange={e => setBioDraft(e.target.value)} />
               <button onClick={saveBio}>Save</button>
               <button onClick={() => setEditing(false)}>Cancel</button>
             </div>
@@ -174,23 +207,34 @@ export default function Profile() {
           )
         ) : (
           <>
-            <p>{profile.bio || 'No bio yet.'}</p>
-            <button onClick={toggleFollow}>
-              {profile.isFollowing ? 'Unfollow' : 'Follow'}
+            <p>{profile.canViewPosts ? profile.bio || 'No bio yet.' : 'Private profile. Request to follow to see their threads.'}</p>
+            <button onClick={toggleFollow} disabled={followBusy}>
+              {followBusy ? 'Saving...' : profile.isFollowing ? 'Unfollow' : profile.followRequested ? 'Cancel request' :
+                profile.profile_visibility === 'private' ? 'Request to follow' : 'Follow'}
             </button>
-            <button onClick={() => navigate(`/messages/${profile.id}`)}>Message</button>
+            {profile.canMessage && <button onClick={() => navigate(`/messages/${profile.id}`)}>Message</button>}
           </>
         )}
-        <div className="profile-stats">
+        {profile.canViewPosts && <div className="profile-stats">
           <span><strong>{profile.postCount}</strong> posts</span>
-          <span><strong>{profile.followerCount}</strong> followers</span>
-          <span><strong>{profile.followingCount}</strong> following</span>
-        </div>
+          <button type="button" className="stat-button" onClick={() => showFollowList('followers')}><strong>{profile.followerCount}</strong> followers</button>
+          <button type="button" className="stat-button" onClick={() => showFollowList('following')}><strong>{profile.followingCount}</strong> following</button>
+        </div>}
+        {followListError && <p className="error" role="alert">{followListError}</p>}
+        {followList && <section className="follow-list" aria-label={followList.direction}>
+          <div><strong>{followList.direction === 'followers' ? 'Followers' : 'Following'}</strong>
+            <button type="button" onClick={() => setFollowList(null)}>Close</button></div>
+          {!followList.users.length && <p className="muted">No members yet.</p>}
+          {followList.users.map(person => <button type="button" key={person.id} onClick={() => navigate('/profile/' + person.username)}>
+            <Avatar url={person.avatar_url} username={person.username} /> {person.username}
+          </button>)}
+        </section>}
       </div>
+      {profile.isSelf && <PostComposer onPosted={posted} />}
 
       <div className="profile-posts">
-        {posts.length === 0 ? (
-          <p className="muted">No posts yet.</p>
+        {!profile.canViewPosts ? <p className="muted">This member shares threads with approved followers.</p> : posts.length === 0 ? (
+          <p className="muted">No threads yet.</p>
         ) : (
           posts.map(post => (
             <PostCard

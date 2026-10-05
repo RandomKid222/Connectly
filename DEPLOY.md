@@ -23,20 +23,22 @@ existing repository and upload the changed files from the new ZIP:
 
 | Repository folder | Files to upload |
 | --- | --- |
-| `backend/` | `db.js`, new `email.js`, `media.js`, `.env.example` |
+| `backend/` | `db.js`, `server.js`, `package.json`, `email.js`, `media.js`, new `access.js`, new `notifications.js`, `.env.example` |
 | `backend/middleware/` | `auth.js` |
-| `backend/routes/` | `auth.js`, `messages.js`, `posts.js`, `users.js` |
-| `frontend/src/components/` | new `Avatar.jsx`, `Navbar.jsx`, `PostCard.jsx`, `CommentSection.jsx`, `UserSearch.jsx` |
+| `backend/routes/` | `auth.js`, `messages.js`, `posts.js`, `users.js`, new `settings.js`, new `notifications.js` |
+| `backend/tests/` | new `features.test.js`, new `cloudinary.test.js` |
+| `frontend/src/components/` | `Avatar.jsx`, `Navbar.jsx`, `PostCard.jsx`, `CommentSection.jsx`, `UserSearch.jsx`, new `LocalTime.jsx`, new `ProtectedImage.jsx`, new `PostComposer.jsx`, new `Notifications.jsx` |
+| `frontend/src/utils/` | new `time.js` |
 | `frontend/src/context/` | `AuthContext.jsx` |
-| `frontend/src/pages/` | `Feed.jsx`, new `ForgotPassword.jsx`, `Login.jsx`, `Messages.jsx`, `Profile.jsx`, new `ResetPassword.jsx` |
+| `frontend/src/pages/` | `Feed.jsx`, `ForgotPassword.jsx`, `Login.jsx`, `Messages.jsx`, `Profile.jsx`, `ResetPassword.jsx`, new `Thread.jsx`, new `Settings.jsx` |
 | `frontend/src/` | `App.jsx`, `styles.css` |
 | `frontend/` | `index.html` |
 | `frontend/public/` | `_redirects`, `favicon.svg`, `favicon-32.png`, `apple-touch-icon.png`, `social-card.svg`, `social-card.png` |
-| repository root | `render.yaml`, `README.md`, `DEPLOY.md`, new `DOMAIN_SETUP.md` |
+| repository root | `.gitignore`, `render.yaml`, `README.md`, `DEPLOY.md`, `DOMAIN_SETUP.md`, new `UPDATE_GUIDE.md` |
 
 Commit the uploaded files. Keep the folder paths exactly as listed; do not
 upload the ZIP itself. Both services need their new code for unread messages
-to work.
+to work. For this release, follow the shorter checklist in [UPDATE_GUIDE.md](UPDATE_GUIDE.md).
 
 The public URL is `https://connectly.lol/`. `connectlyplace.netlify.app`
 remains the project's Netlify hostname and the DNS CNAME target. If you change
@@ -49,6 +51,9 @@ the existing Turso database when Render starts. It also adds message read status
 to the existing Turso database when Render starts. Existing accounts and
 messages remain in place. Profile photos use your existing Cloudinary settings;
 no additional environment variable is needed.
+This release also adds thread titles, reply relationships, protected DM photo
+references, notification history, follow requests, and account settings on startup.
+It keeps current rows and IDs; do not reset the Turso database or its ID sequence.
 While the site is open, posts, profiles, visible comments, and the unread dot
 update about every 30 seconds. Open conversations check for messages about
 every 15 seconds. Opening a conversation marks its received messages as read.
@@ -71,6 +76,7 @@ source files and dotfiles. Do not upload just the ZIP, just `dist/`, or just
 `frontend/`. Do **not** upload a real `.env` or `.env.production`,
 `node_modules/`, `dist/`, `social.db`, or real files in `backend/uploads/`.
 The included `.env.example` is a public template containing no working secrets.
+Local private photos under `backend/private-uploads/` are also excluded from Git.
 
 **Windows / GitHub Desktop:** Extract the ZIP. Install [GitHub Desktop](https://desktop.github.com/)
 and sign in. Choose **File → Add local repository → Choose** and select the
@@ -192,6 +198,11 @@ independently of Render restarts. Back up data you care about.
    Netlify needs no Cloudinary keys.
    Profile photos use the same checks and upload path. In Cloudinary's Media
    Library, find them in `connectly/avatars`.
+   Thread photos are under `connectly/posts`, and DM photos under
+   `connectly/messages`. They use Cloudinary's authenticated delivery type:
+   the app loads them through the backend after checking the viewer.
+   The existing Cloudinary credentials are sufficient; no unsigned preset
+   or new environment variable is required.
 6. Login allows 10 unsuccessful attempts per IP address in 15 minutes. If you
    reach that limit, wait until the window ends before retrying. `Invalid
    credentials` means the email/username or password did not match a stored
