@@ -1,11 +1,16 @@
 # Connectly
 
-The interface uses a charcoal-and-white design with a black conversation logo,
-desktop side navigation and a phone bottom menu. Feed cards, profiles, messages,
-login/signup, notifications and settings share the same visual style. The
-favicon, Apple touch icon and social preview use the new black branding.
-Existing appearance preferences are preserved; choose a theme preview in
-Settings and save it to your account. See [UPDATE_GUIDE.md](UPDATE_GUIDE.md).
+The interface uses an ink-and-acid design: a black masthead, lime cutouts,
+warm paper surfaces, oversized headlines, serif thread titles and sharp edges.
+A new interlocking connection mark appears in the header, favicon, Apple
+touch icon and social preview. Desktop has side navigation; phones have a
+five-item bottom menu. Existing light/dark/device preferences are preserved.
+
+Two new features: private **Saved** threads and polls with **2–6 choices**.
+Use Save on any accessible thread, then open Saved to revisit it. Add poll in
+the composer creates a poll; each account can vote once, change its choice or
+remove its vote. Polls can include photos. This version updates both frontend
+and backend. See [UPDATE_GUIDE.md](UPDATE_GUIDE.md) before deploying.
 
 Primary public site: [connectly.lol](https://connectly.lol/).
 The alternate domain [contactly.lol](https://contactly.lol/) redirects to it.
@@ -98,5 +103,6 @@ npm test
 
 The checks use temporary databases and test credentials. They cover migration,
 photo access, replies, privacy, discoverability, notifications, password/session
-changes, reset links, timezone conversion, and mocked Cloudinary operations.
+changes, reset links, timezone conversion, bookmarks, poll validation,
+vote changes, transaction rollback, and mocked Cloudinary operations.
 They do not send real email or contact a live Cloudinary account.

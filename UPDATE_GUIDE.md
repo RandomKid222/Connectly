@@ -1,118 +1,133 @@
-# Update Connectly: the charcoal design
+# Update Connectly: ink and acid
 
-This release refreshes the interface with a black conversation-mark logo, new
-favicon and social preview, charcoal colours, clearer thread cards, profile
-headers, a redesigned inbox and account pages, and visual theme choices.
-Desktop has a side menu; phones have a bottom menu. The bell and search stay
-in the top bar. Your saved light/dark/device preference is preserved.
+This ZIP contains the complete updated app for https://connectly.lol.
+It uses your existing GitHub repository, Render backend, Netlify frontend,
+Turso database, Cloudinary account and Brevo setup.
 
-## Updating from the previous threads-and-settings ZIP
+## What changed
 
-Only the frontend and documentation changed in this design update. The backend,
-database schema, environment variables and lockfiles are unchanged.
+The new identity combines an ink-black masthead, acid-lime accents, warm
+paper backgrounds, oversized headlines, serif thread titles, cutout labels,
+taped notes and sharp borders. It includes a new geometric interlocking
+connection logo, favicon, Apple icon and social preview. Feed, profiles,
+messages, account pages, saved threads and settings share this style.
+Light, dark and device themes remain available.
 
-1. Extract this ZIP and copy its contents into your existing repository,
-   preserving the `backend/` and `frontend/` folders.
-2. Commit and push. Your existing Netlify project builds the new frontend.
-   If you upload files through GitHub's website, include the four new components
-   `AuthLayout.jsx`, `Brand.jsx`, `Icon.jsx` and `Sidebar.jsx` in
-   `frontend/src/components/`, along with the updated frontend source and assets.
-   `DEPLOY.md` lists the complete repository paths.
-3. Wait for Netlify to finish successfully, then open https://connectly.lol.
-   An old open tab or cached tab icon may need a reload or a new tab.
-   No Render environment change or manual Turso edit is needed for this design.
+Two new features are fully connected to the backend:
 
-Use Settings → Appearance to try the theme preview cards, then Save settings.
-On a phone, open Messages to see the inbox. Choose a conversation and use its
-back arrow to return to the inbox. Log out is in the desktop side menu or the
-top-right arrow icon on a phone.
+- **Saved threads:** use Save on a thread, then open Saved in the navigation.
+  Saving is private to your account; the author receives no notification.
+  The list shows your latest 100 accessible saved threads. Unsave removes
+  a thread immediately. Private threads still require the author's approval.
+  If you lose access, the thread disappears from this list; saving does not
+  grant access or make a permanent copy.
+- **Polls:** use Add poll in the feed or your own profile. Enter a question
+  as the title and 2–6 different choices of up to 80 characters each.
+  A poll can include text and a photo. Each account has one vote per poll.
+  Pick another choice to change it, or use Remove vote. Results refresh with
+  the thread. The app shows aggregate counts and your choice; it does not
+  publish a voter list. This is not a promise of anonymous voting: database
+  administrators can access stored votes.
 
-The production build, all 10 backend tests and desktop/mobile browser checks
-passed before this ZIP was made. Browser checks cover search, navigation,
-threads and nested replies, photo DMs and profiles, editing a bio, notifications,
-privacy approval, theme cards and persistence, exports, passwords and sessions,
-mobile inbox navigation, logout, and 320 px/390 px layouts without horizontal
-overflow or browser runtime errors. Cloudinary checks use simulated uploads;
-live account configuration should still be checked after deployment.
+Data downloads now include your saved-thread references and your own votes.
+Existing threads, accounts, messages, settings, photo permissions and IDs
+are preserved. This update adds three tables on backend startup and does
+not need new environment variables or dependencies.
 
-## Previous feature update: threads, photos, activity and settings
+## Update your existing site, step by step
 
-This ZIP contains the whole updated project. It uses your existing GitHub repo,
-Render backend, Netlify frontend, Turso database, Cloudinary account and Brevo setup.
-The main site remains https://connectly.lol.
+1. Extract the ZIP into a separate folder. Copy its contents into your
+   existing local GitHub repository, preserving the same folder structure.
+   The repository root must contain backend/, frontend/ and render.yaml.
+   Upload the included README, deployment guides and .gitignore as well.
+   Never copy a real .env, database, uploaded photos, node_modules/ or dist/.
+   The included backend/.env.example is a template with placeholders.
+2. In GitHub Desktop, review the changes, commit them and push.
+   If using GitHub's website, open each matching repository folder before
+   uploading its files. Do not put all files into the repository root.
+   DEPLOY.md lists every folder and the files it should contain.
+   This update adds Poll.jsx, SavedThreads.jsx, creative.css and
+   backend/tests/community.test.js; include them with the changed files.
+3. Open the **existing, working Render backend service**. Let it deploy the
+   latest commit, or use **Manual Deploy → Deploy latest commit** if needed.
+   Its public API is https://social-network-backend-b7h6.onrender.com.
+   Do not create a second service. Wait for a successful deployment.
+   On startup it creates bookmarks, poll_options and poll_votes in Turso.
+   Do not manually edit SQL, delete data or change the ID sequence.
+4. Open https://social-network-backend-b7h6.onrender.com/api/health.
+   It should return {"ok":true}. Keep all current Render environment variables,
+   including JWT_SECRET, database/image/email credentials and
+   CORS_ORIGIN=https://connectly.lol.
+5. Let your **existing Netlify project** finish its GitHub build. If it
+   did not deploy automatically, trigger a deploy from the latest commit
+   after the backend is ready. Keep Base directory frontend, Build command
+   npm run build, Publish directory dist, and
+   VITE_API_URL=https://social-network-backend-b7h6.onrender.com.
+   This public URL is the only app environment value needed on Netlify.
+6. Wait until both deployments succeed, then open https://connectly.lol.
+   Refresh an old tab once to load the new code. A cached favicon may need
+   a new tab. Ongoing feed, message and activity updates continue polling.
 
-### Install the feature update if you have not done so yet
+If Netlify builds while Render is still updating, the new controls may fail
+temporarily. Finish the backend deployment and reload the site. No additional
+Turso token, Cloudinary preset or Brevo sender is required for this release.
 
-1. Extract the ZIP. Copy its contents into your existing local repository so
-   `backend/`, `frontend/` and `render.yaml` stay at the repository root.
-   Keep your real credentials in Render. The included `.env.example` is a template.
-2. If using GitHub Desktop, review the changes, commit them and push.
-   If uploading in GitHub's browser, use the matching folder for each file.
-   The upload table in `DEPLOY.md` lists the paths. Upload code, not the ZIP,
-   local databases, uploaded photos, `node_modules/` or `dist/`.
-3. Let the existing Render service deploy the updated backend. It automatically
-   adds the new Turso columns and tables. No SQL, database reset, ID edits,
-   new service or new environment variable is needed.
-   If auto-deploy is off, use Manual Deploy → Deploy latest commit on your
-   existing service: https://social-network-backend-b7h6.onrender.com.
-4. Let your existing Netlify project rebuild the frontend. Keep
-   `VITE_API_URL=https://social-network-backend-b7h6.onrender.com`.
-   Wait until both deployments are successful before testing the new features.
-5. Open https://connectly.lol. If an old tab still displays the previous version,
-   reload it once. Ongoing feed, thread, message and activity updates then use polling.
+## Check after deployment
 
-## What to try
+1. Log in, publish a regular thread and a poll, then vote. Change your choice
+   and remove it; the total must not accumulate duplicate votes.
+2. Save a thread, open Saved, and refresh. Log into another account and check
+   that its Saved list is separate. Unsave the thread and check it disappears.
+3. Save a private author's thread as an approved follower. Unfollow that author
+   and confirm their private thread is no longer visible in Saved.
+4. Send one small JPG/PNG/WebP photo between two test accounts. Check its display
+   from the recipient, and check a profile photo and a photo thread.
+5. Try mobile navigation, the activity bell and Light/Dark/Device appearance.
+   Save settings and reload to confirm your preference persists.
 
-- Feed or your own profile → enter a thread title, optional text and a photo →
-  Publish thread. Open thread to see its discussion and reply to a comment.
-- Messages → choose a member → Photo → select a JPG, PNG or WebP up to 5 MB →
-  optionally add text → Send. Click a delivered photo to open the full photo.
-- Bell → recent activity. Open an item or use Mark all read. Follow requests
-  can be accepted or declined here.
-- Settings → choose Light, Dark or Use device setting → Save settings.
-  The preference is saved to your account.
-- Private profile: existing followers keep access; new followers need approval.
-  Your username and profile photo remain visible. Older public thread photos
-  are converted to protected storage when making the profile private.
-  Cloudinary CDN invalidation can take time, and downloaded copies cannot be recalled.
-- Who can message you: All members, People I follow, or No one. It governs
-  new messages even in existing conversations.
-- Discoverability: user-search and Explore switches are applied by the backend.
-  Hiding from Explore does not hide your threads from approved followers.
-- Data sharing: hide your follower/following member lists from other users,
-  or download your own text/account data as JSON. Photo files are not in the export.
-- Security: change your password or sign out other sessions. Your current browser
-  receives a new login token; old sessions become invalid.
+## Existing features still included
 
-## Local time and missing IDs
+- Thread pages, upvotes, nested replies and photos on the feed or your profile.
+- Photo DMs up to 5 MB, unread red dots and recent-activity notifications.
+- Private profiles and follow approvals in the activity dropdown.
+- Search and Explore visibility, follow-list sharing and DM permissions.
+- Account-data downloads, password changes, signing out other sessions and
+  one-time password reset emails using your existing Brevo configuration.
+- Local times based on each viewer's device timezone, including daylight saving.
 
-The database continues storing UTC. The browser converts it to the viewer's
-device timezone and locale, including daylight-saving changes. There is no
-need to infer a timezone from Render's IP address or its server location.
-Check the timezone setting on your phone/computer if a displayed time is unexpected.
+New thread and DM photos use protected Cloudinary storage and are delivered
+through the API after checking access. Profile photos remain public.
+Older public thread photos are converted when making the author's profile
+private. Provider caches can take time to clear; downloaded copies cannot
+be recalled.
 
-IDs such as 2 and 3 stay missing after deleting those posts. That is normal:
-IDs identify rows, and likes, replies and links refer to them. They are not a
-post count. Do not renumber rows or change `sqlite_sequence` to fill gaps.
-New posts continuing at 5 or higher is correct. Deleted content is recoverable
-only from a backup that contained it.
+## Local time and deleted IDs
 
-## Verification
+Turso keeps UTC timestamps. The browser converts them to the viewer's device
+timezone and locale. Render's IP address and location do not set the viewer's
+time. Check your phone or computer timezone if the displayed time is unexpected.
 
-Run `cd backend` and `npm test` for the included checks. They use isolated
-temporary databases and test credentials. They cover old-data migration,
-ID gaps, text/photo messages, invalid and oversized files, image permissions,
-nested replies, upvotes, notifications, private profiles and follow approval,
-discovery and follow-list permissions, account exports, password changes,
-session invalidation, reset links, and timezone/daylight-saving conversion.
-Cloudinary upload/delivery/type-conversion behavior is checked with a mock;
-these checks do not send real email or modify a live Cloudinary account.
+Missing post or message IDs after deletion are normal. IDs identify rows;
+likes, replies, votes and links refer to them. Do not renumber rows or change
+sqlite_sequence to fill gaps. New items continuing at 5 or higher is correct.
+Deleted content can only be recovered from a backup containing it.
 
-Before creating this ZIP, all 10 backend tests passed. Desktop and mobile browser
-checks also passed for threads, photo messages, profile photos, notifications,
-privacy, theme persistence, account exports and security settings, with no browser
-runtime errors. The production frontend build passed using your Render API URL.
+## Verification before packaging
 
-After deploying, send one small photo between two test accounts and check it
-from the recipient. Check a private thread from an approved follower and a
-third account. Your existing production credentials are used for those live tests.
+All 19 backend checks passed, including repeatable migrations, old data and
+ID gaps, poll validation and rollback, vote changes, saved-list privacy,
+follow-access changes, cascading deletion, safe photo uploads, DM permissions,
+notifications, account exports, password/session security, reset links,
+timezone conversion and mocked Cloudinary operations.
+
+The production frontend build passed using your Render API URL.
+Desktop and mobile browser checks passed at 1280, 390 and 320 pixels:
+poll creation and votes, saving/unsaving and persistence, search, thread photos
+and replies, profile editing, photo DMs, follow approvals, notifications,
+theme persistence, exports, security actions, mobile inbox navigation,
+logout and account-page navigation. No browser runtime errors or horizontal
+overflow were found in these checks.
+
+These were isolated local tests. Cloudinary and email checks were simulated;
+no real messages were emailed and no live accounts were modified.
+Your deployed site changes only after you upload and deploy this code.

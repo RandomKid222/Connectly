@@ -7,7 +7,7 @@ import Icon from './Icon.jsx';
 export default function Sidebar() {
   const { user, logout, unreadCount } = useAuth();
   return <aside className="app-sidebar">
-    <p className="sidebar-label">YOUR SPACE</p>
+    <p className="sidebar-label">THE SHORTCUTS</p>
     <nav className="side-nav" aria-label="Main navigation">
       <NavLink to="/" end><Icon name="home" /><span>Feed</span></NavLink>
       <NavLink to="/messages" className="message-nav-link"
@@ -15,12 +15,13 @@ export default function Sidebar() {
         <Icon name="message" /><span>Messages</span>
         {unreadCount > 0 && <span className="unread-dot" aria-hidden="true" />}
       </NavLink>
-      <NavLink to={'/profile/' + user.username}><Icon name="user" /><span>Your profile</span></NavLink>
+      <NavLink to="/saved"><Icon name="bookmark" /><span>Saved</span></NavLink>
+      <NavLink to={'/profile/' + user.username} aria-label="Your profile"><Icon name="user" /><span>Profile</span></NavLink>
       <NavLink to="/settings"><Icon name="settings" /><span>Settings</span></NavLink>
     </nav>
-    <div className="sidebar-note"><span className="small-mark">c.</span>
-      <p>A little thought can start a great conversation.</p>
-      <Link to="/">Share yours <Icon name="arrow" size={16} /></Link>
+    <div className="sidebar-note"><Icon name="spark" size={38} />
+      <p>KEEP THE<br /><strong>GOOD BITS.</strong></p>
+      <Link to="/saved">Your saved threads <Icon name="arrow" size={16} /></Link>
     </div>
     <div className="sidebar-account">
       <Link to={'/profile/' + user.username}>

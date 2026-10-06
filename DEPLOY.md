@@ -1,7 +1,8 @@
 # Connectly: exact deployment guide
 
 The GitHub repository holds code. Render runs the Node/Express backend. Netlify
-hosts the React frontend. Turso stores users, posts, likes, comments and messages.
+hosts the React frontend. Turso stores users, posts, likes, comments, messages,
+saved-thread references, polls and votes.
 Cloudinary stores uploaded images. The backend starts the database tables itself.
 Use Node 24; the included configuration sets it for both hosts.
 
@@ -11,11 +12,12 @@ finish DNS and HTTPS for both purchased domains before deploying this ZIP.
 
 ## Updating an already deployed site
 
-**This design update only changes the frontend and documentation.** If your
-previous threads/photos/settings version is already deployed, there is no new
-backend setup, environment variable or Turso migration for the visual changes.
-The ZIP also includes the previous backend feature update for anyone who still
-needs it. See [UPDATE_GUIDE.md](UPDATE_GUIDE.md) for the shorter update checklist.
+**This ink-and-acid update changes both frontend and backend.** Render adds
+the bookmarks, poll options and poll votes tables automatically on startup.
+Deploy the existing Render service first, then let Netlify rebuild. No new
+service, environment variable or dependency is needed. Keep your current
+credentials on their services. See [UPDATE_GUIDE.md](UPDATE_GUIDE.md) for the
+shorter update checklist.
 
 Unzip the latest project ZIP. Copy its contents into your existing local GitHub
 repository, keeping `backend/`, `frontend/` and `render.yaml` at the top level.
@@ -29,22 +31,23 @@ existing repository and upload the changed files from the new ZIP:
 
 | Repository folder | Files to upload |
 | --- | --- |
-| `backend/` | `db.js`, `server.js`, `package.json`, `email.js`, `media.js`, new `access.js`, new `notifications.js`, `.env.example` |
+| `backend/` | `db.js`, `server.js`, `package.json`, `package-lock.json`, `email.js`, `media.js`, `access.js`, `notifications.js`, `.env.example`, `.node-version`, `.gitignore` |
 | `backend/middleware/` | `auth.js` |
-| `backend/routes/` | `auth.js`, `messages.js`, `posts.js`, `users.js`, new `settings.js`, new `notifications.js` |
-| `backend/tests/` | new `features.test.js`, new `cloudinary.test.js` |
-| `frontend/src/components/` | `Avatar.jsx`, `Navbar.jsx`, `PostCard.jsx`, `CommentSection.jsx`, `UserSearch.jsx`, `LocalTime.jsx`, `ProtectedImage.jsx`, `PostComposer.jsx`, `Notifications.jsx`, new `AuthLayout.jsx`, new `Brand.jsx`, new `Icon.jsx`, new `Sidebar.jsx` |
-| `frontend/src/utils/` | new `time.js` |
+| `backend/routes/` | `auth.js`, `messages.js`, `posts.js`, `users.js`, `settings.js`, `notifications.js` |
+| `backend/tests/` | `features.test.js`, `cloudinary.test.js`, new `community.test.js` |
+| `backend/uploads/` | `.gitkeep` only |
+| `frontend/src/components/` | `Avatar.jsx`, `Navbar.jsx`, `PostCard.jsx`, `CommentSection.jsx`, `UserSearch.jsx`, `LocalTime.jsx`, `ProtectedImage.jsx`, `PostComposer.jsx`, `Notifications.jsx`, `AuthLayout.jsx`, `Brand.jsx`, `Icon.jsx`, `Sidebar.jsx`, new `Poll.jsx` |
+| `frontend/src/utils/` | `time.js` |
 | `frontend/src/context/` | `AuthContext.jsx` |
-| `frontend/src/pages/` | `Feed.jsx`, `Signup.jsx`, `ForgotPassword.jsx`, `Login.jsx`, `Messages.jsx`, `Profile.jsx`, `ResetPassword.jsx`, `Thread.jsx`, `Settings.jsx` |
-| `frontend/src/` | `App.jsx`, `styles.css` |
-| `frontend/` | `index.html` |
+| `frontend/src/pages/` | `Feed.jsx`, `Signup.jsx`, `ForgotPassword.jsx`, `Login.jsx`, `Messages.jsx`, `Profile.jsx`, `ResetPassword.jsx`, `Thread.jsx`, `Settings.jsx`, new `SavedThreads.jsx` |
+| `frontend/src/` | `App.jsx`, `main.jsx`, `api.js`, `styles.css`, new `creative.css` |
+| `frontend/` | `index.html`, `package.json`, `package-lock.json`, `vite.config.js`, `.node-version`, `.gitignore` |
 | `frontend/public/` | `_redirects`, `favicon.svg`, `favicon-32.png`, `apple-touch-icon.png`, `social-card.svg`, `social-card.png` |
-| repository root | `.gitignore`, `render.yaml`, `README.md`, `DEPLOY.md`, `DOMAIN_SETUP.md`, new `UPDATE_GUIDE.md` |
+| repository root | `.gitignore`, `render.yaml`, `README.md`, `DEPLOY.md`, `DOMAIN_SETUP.md`, `UPDATE_GUIDE.md` |
 
 Commit the uploaded files. Keep the folder paths exactly as listed; do not
-upload the ZIP itself. Both services need their new code for unread messages
-to work. For this release, follow the shorter checklist in [UPDATE_GUIDE.md](UPDATE_GUIDE.md).
+upload the ZIP itself. Both services need the new code for polls and saved
+threads to work. For this release, follow [UPDATE_GUIDE.md](UPDATE_GUIDE.md).
 
 The public URL is `https://connectly.lol/`. `connectlyplace.netlify.app`
 remains the project's Netlify hostname and the DNS CNAME target. If you change
@@ -60,6 +63,8 @@ no additional environment variable is needed.
 This release also adds thread titles, reply relationships, protected DM photo
 references, notification history, follow requests, and account settings on startup.
 It keeps current rows and IDs; do not reset the Turso database or its ID sequence.
+The ink-and-acid release adds bookmarks and polls without altering existing
+threads. Database tables are added automatically by the backend startup migration.
 While the site is open, posts, profiles, visible comments, and the unread dot
 update about every 30 seconds. Open conversations check for messages about
 every 15 seconds. Opening a conversation marks its received messages as read.
@@ -75,6 +80,8 @@ render.yaml          Render backend configuration
 .gitignore           excludes local secrets and generated files
 README.md
 DEPLOY.md
+DOMAIN_SETUP.md
+UPDATE_GUIDE.md
 ```
 
 Upload all project files under `backend/` and `frontend/`, including the lockfiles,

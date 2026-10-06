@@ -19,26 +19,55 @@ function publicPost(row) {
     image_private: !!image_private, likedByMe: !!post.likedByMe,
     author: { id: post.user_id, username: author_name, avatar_url: author_avatar } };
 }
+async function addExtras(posts, viewerId) {
+  if (!posts.length) return posts;
+  const ids = posts.map(post => Number(post.id));
+  const placeholders = ids.map(() => '?').join(',');
+  const [saved, options] = await Promise.all([
+    db.all('SELECT post_id FROM bookmarks WHERE user_id = ? AND post_id IN (' + placeholders + ')', viewerId, ...ids),
+    db.all('SELECT o.id, o.post_id, o.label, o.position, COUNT(v.user_id) AS votes, ' +
+      'MAX(CASE WHEN v.user_id = ? THEN 1 ELSE 0 END) AS votedByMe FROM poll_options o ' +
+      'LEFT JOIN poll_votes v ON v.post_id = o.post_id AND v.option_id = o.id ' +
+      'WHERE o.post_id IN (' + placeholders + ') GROUP BY o.id ORDER BY o.position', viewerId, ...ids)
+  ]);
+  const savedIds = new Set(saved.map(row => Number(row.post_id)));
+  const polls = new Map();
+  for (const option of options) {
+    const id = Number(option.post_id);
+    if (!polls.has(id)) polls.set(id, { options: [], totalVotes: 0, myVote: null });
+    const poll = polls.get(id);
+    poll.options.push({ id: Number(option.id), label: option.label, votes: Number(option.votes) });
+    poll.totalVotes += Number(option.votes);
+    if (option.votedByMe) poll.myVote = Number(option.id);
+  }
+  return posts.map(post => ({ ...post, savedByMe: savedIds.has(Number(post.id)), poll: polls.get(Number(post.id)) || null }));
+}
 async function getPost(id, viewerId) {
   const row = await db.get(postSelect + ' WHERE p.id = ? AND ' + visibleProfileSQL, viewerId, id, viewerId, viewerId);
-  return row ? publicPost(row) : null;
+  return row ? (await addExtras([publicPost(row)], viewerId))[0] : null;
 }
+router.get('/saved', async (req, res) => {
+  const rows = await db.all(postSelect + ' JOIN bookmarks b ON b.post_id = p.id AND b.user_id = ? ' +
+    'WHERE ' + visibleProfileSQL + ' ORDER BY b.created_at DESC, b.post_id DESC LIMIT 100',
+    req.userId, req.userId, req.userId, req.userId);
+  res.json({ posts: await addExtras(rows.map(publicPost), req.userId) });
+});
 router.get('/feed', async (req, res) => {
   const rows = await db.all(postSelect + ' WHERE ' + visibleProfileSQL +
     ' AND (p.user_id = ? OR p.user_id IN (SELECT following_id FROM follows WHERE follower_id = ?)) ' +
     'ORDER BY p.created_at DESC, p.id DESC LIMIT 50', req.userId, req.userId, req.userId, req.userId, req.userId);
-  res.json({ posts: rows.map(publicPost) });
+  res.json({ posts: await addExtras(rows.map(publicPost), req.userId) });
 });
 router.get('/explore', async (req, res) => {
   const rows = await db.all(postSelect + ' WHERE ' + visibleProfileSQL +
     ' AND (u.show_in_explore = 1 OR u.id = ?) ORDER BY p.created_at DESC, p.id DESC LIMIT 50',
     req.userId, req.userId, req.userId, req.userId);
-  res.json({ posts: rows.map(publicPost) });
+  res.json({ posts: await addExtras(rows.map(publicPost), req.userId) });
 });
 router.get('/user/:userId', async (req, res) => {
   const rows = await db.all(postSelect + ' WHERE p.user_id = ? AND ' + visibleProfileSQL +
     ' ORDER BY p.created_at DESC, p.id DESC LIMIT 50', req.userId, req.params.userId, req.userId, req.userId);
-  res.json({ posts: rows.map(publicPost) });
+  res.json({ posts: await addExtras(rows.map(publicPost), req.userId) });
 });
 router.post('/', upload.single('image'), async (req, res) => {
   const { content, title } = req.body || {};
@@ -47,16 +76,66 @@ router.post('/', upload.single('image'), async (req, res) => {
     return res.status(400).json({ error: 'Use a title of at most 200 characters and text of at most 5000 characters' });
   }
   if (!title?.trim() && !content?.trim() && !req.file) return res.status(400).json({ error: 'Thread needs a title, text, or a photo' });
+  let pollOptions;
+  if (req.body.pollOptions !== undefined) {
+    try { pollOptions = typeof req.body.pollOptions === 'string' ? JSON.parse(req.body.pollOptions) : req.body.pollOptions; }
+    catch { return res.status(400).json({ error: 'Invalid poll options' }); }
+    if (!title?.trim() || !Array.isArray(pollOptions) || pollOptions.length < 2 || pollOptions.length > 6 ||
+        pollOptions.some(option => typeof option !== 'string' || !option.trim() || option.length > 80)) {
+      return res.status(400).json({ error: 'A poll needs a question as its title and 2–6 choices of 1–80 characters' });
+    }
+    pollOptions = pollOptions.map(option => option.trim());
+    if (new Set(pollOptions.map(option => option.toLowerCase())).size !== pollOptions.length) {
+      return res.status(400).json({ error: 'Each poll choice must be different' });
+    }
+  }
   const image = req.file ? await saveImage(req.file.buffer, { privateImage: true, folder: 'connectly/posts' }) : { url: '', publicId: '' };
   let info;
   try {
-    info = await db.run('INSERT INTO posts (user_id, title, content, image_url, image_public_id, image_private) VALUES (?, ?, ?, ?, ?, ?)',
-      req.userId, title?.trim() || '', content?.trim() || '', image.url, image.publicId, Number(!!req.file));
+    if (pollOptions) {
+      info = { lastInsertRowid: await db.createPollPost(req.userId, title.trim(), content?.trim() || '', image, pollOptions) };
+    } else {
+      info = await db.run('INSERT INTO posts (user_id, title, content, image_url, image_public_id, image_private) VALUES (?, ?, ?, ?, ?, ?)',
+        req.userId, title?.trim() || '', content?.trim() || '', image.url, image.publicId, Number(!!req.file));
+    }
   } catch (error) {
     if (image.url) await deleteImage(image.url, image.publicId, { privateImage: true }).catch(console.error);
     throw error;
   }
   res.status(201).json({ post: await getPost(info.lastInsertRowid, req.userId) });
+});
+router.post('/:id/bookmark', async (req, res) => {
+  const post = await accessiblePost(req.params.id, req.userId);
+  if (!post) return res.status(404).json({ error: 'Thread not found or private' });
+  await db.run('INSERT OR IGNORE INTO bookmarks (user_id, post_id) VALUES (?, ?)', req.userId, post.id);
+  res.json({ saved: true });
+});
+router.delete('/:id/bookmark', async (req, res) => {
+  // A member may remove their own saved reference after losing access to a thread.
+  await db.run('DELETE FROM bookmarks WHERE user_id = ? AND post_id = ?', req.userId, req.params.id);
+  res.json({ saved: false });
+});
+router.post('/:id/vote', async (req, res) => {
+  const { option_id } = req.body || {};
+  if (!Number.isSafeInteger(option_id) || option_id <= 0) return res.status(400).json({ error: 'Choose a valid poll option' });
+  const post = await accessiblePost(req.params.id, req.userId);
+  if (!post) return res.status(404).json({ error: 'Thread not found or private' });
+  if (!(await db.get('SELECT id FROM poll_options WHERE post_id = ? AND id = ?', post.id, option_id))) {
+    return res.status(400).json({ error: 'This choice is not in this poll' });
+  }
+  await db.run('INSERT INTO poll_votes (post_id, user_id, option_id) VALUES (?, ?, ?) ' +
+    'ON CONFLICT(post_id, user_id) DO UPDATE SET option_id = excluded.option_id', post.id, req.userId, option_id);
+  const updated = await getPost(post.id, req.userId);
+  if (!updated) return res.status(404).json({ error: 'Thread not found or private' });
+  res.json({ poll: updated.poll });
+});
+router.delete('/:id/vote', async (req, res) => {
+  const post = await accessiblePost(req.params.id, req.userId);
+  if (!post) return res.status(404).json({ error: 'Thread not found or private' });
+  await db.run('DELETE FROM poll_votes WHERE post_id = ? AND user_id = ?', post.id, req.userId);
+  const updated = await getPost(post.id, req.userId);
+  if (!updated) return res.status(404).json({ error: 'Thread not found or private' });
+  res.json({ poll: updated.poll });
 });
 router.get('/:id/image', async (req, res) => {
   const post = await accessiblePost(req.params.id, req.userId);

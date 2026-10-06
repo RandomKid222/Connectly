@@ -122,7 +122,7 @@ export default function Settings() {
         <p className="setting-help">Connectly uses hosting, image storage, and email providers to operate. These controls manage what other members see.</p>
         <button type="button" className="secondary-button" disabled={exporting} onClick={download}>
           {exporting ? 'Preparing...' : 'Download my data'}</button>
-        <p className="setting-help">Downloads your account details, text posts, comments, conversations, and follow relationships as JSON. Photo files are not included.</p>
+        <p className="setting-help">Downloads your account details, text posts, comments, conversations, follow relationships, saved-thread references and your poll votes as JSON. Photo files are not included.</p>
       </fieldset>
       <div className="settings-save"><button className="primary-button" type="submit" disabled={busy}>{busy ? 'Saving...' : 'Save settings'}<Icon name="check" size={17} /></button>
       {message && <p className="success" role="status">{message}</p>}

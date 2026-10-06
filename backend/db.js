@@ -74,6 +74,26 @@ const schema = [
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (follower_id, following_id)
   )`,
+  `CREATE TABLE IF NOT EXISTS bookmarks (
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    post_id INTEGER NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, post_id)
+  )`,
+  `CREATE TABLE IF NOT EXISTS poll_options (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    post_id INTEGER NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+    position INTEGER NOT NULL, label TEXT NOT NULL,
+    UNIQUE (post_id, position), UNIQUE (post_id, id)
+  )`,
+  `CREATE TABLE IF NOT EXISTS poll_votes (
+    post_id INTEGER NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    option_id INTEGER NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (post_id, user_id),
+    FOREIGN KEY (post_id, option_id) REFERENCES poll_options(post_id, id) ON DELETE CASCADE
+  )`,
   `CREATE TABLE IF NOT EXISTS notifications (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -127,6 +147,8 @@ async function init() {
     }
   }
   await client.execute('CREATE INDEX IF NOT EXISTS idx_comments_thread ON comments(post_id, parent_id, id)');
+  await client.execute('CREATE INDEX IF NOT EXISTS idx_bookmarks_user ON bookmarks(user_id, created_at, post_id)');
+  await client.execute('CREATE INDEX IF NOT EXISTS idx_poll_votes_option ON poll_votes(option_id)');
   await client.execute('CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, read_at, id)');
   await client.execute('CREATE UNIQUE INDEX IF NOT EXISTS idx_notifications_event ON notifications ' +
     '(user_id, actor_id, kind, COALESCE(post_id, 0), COALESCE(comment_id, 0), COALESCE(message_id, 0))');
@@ -163,4 +185,22 @@ async function resetPassword(tokenHash, passwordHash, now) {
   }
 }
 async function batch(statements) { return client.batch(statements, 'write'); }
-module.exports = { init, get, all, run, batch, resetPassword };
+async function createPollPost(userId, title, content, image, options) {
+  const tx = await client.transaction('write');
+  try {
+    const result = await tx.execute({
+      sql: 'INSERT INTO posts (user_id, title, content, image_url, image_public_id, image_private) VALUES (?, ?, ?, ?, ?, ?) RETURNING id',
+      args: [userId, title, content, image.url, image.publicId, Number(!!image.url)]
+    });
+    const id = Number(result.rows[0].id);
+    for (let position = 0; position < options.length; position++) {
+      await tx.execute({ sql: 'INSERT INTO poll_options (post_id, position, label) VALUES (?, ?, ?)', args: [id, position, options[position]] });
+    }
+    await tx.commit();
+    return id;
+  } catch (error) {
+    await tx.rollback().catch(() => {});
+    throw error;
+  }
+}
+module.exports = { init, get, all, run, batch, resetPassword, createPollPost };

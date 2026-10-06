@@ -1,6 +1,10 @@
 import React from 'react';
 
 const paths = {
+  bookmark: <path d="M6 3h12v18l-6-4-6 4Z" />,
+  poll: <><path d="M4 21h16M7 17V9m5 8V3m5 14v-5" /></>,
+  spark: <path d="m12 2 2.4 6.5L21 6l-2.5 6.4L22 16l-7-1 1 7-4-4-4 4 1-7-7 1 3.5-3.6L3 6l6.6 2.5Z" />,
+  close: <path d="m6 6 12 12M6 18 18 6" />,
   home: <><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z" /></>,
   explore: <><circle cx="12" cy="12" r="9" /><path d="m16 8-2 6-6 2 2-6Z" /></>,
   message: <path d="M21 11a9 9 0 0 1-9 9H5l-3 2 1-6a9 9 0 1 1 18-5Z" />,
