@@ -1,22 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="Connectly social preview">
-  <defs>
-    <linearGradient id="backdrop" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#221c6b" />
-      <stop offset="1" stop-color="#5549d9" />
-    </linearGradient>
-    <linearGradient id="icon" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#746cff" />
-      <stop offset="1" stop-color="#4338ca" />
-    </linearGradient>
-  </defs>
-  <rect width="1200" height="630" fill="url(#backdrop)" />
-  <circle cx="1130" cy="95" r="220" fill="#fff" opacity=".055" />
-  <circle cx="1080" cy="560" r="320" fill="#80f1e8" opacity=".06" />
-  <circle cx="130" cy="600" r="260" fill="#fff" opacity=".04" />
-  <rect x="104" y="176" width="196" height="196" rx="49" fill="url(#icon)" stroke="#fff" stroke-opacity=".22" stroke-width="3" />
-  <path d="M239 234a60 60 0 1 0 0 80" fill="none" stroke="#fff" stroke-width="24" stroke-linecap="round" />
-  <circle cx="245" cy="274" r="13" fill="#80f1e8" />
-  <text x="344" y="268" fill="#fff" font-family="Arial, Helvetica, sans-serif" font-size="90" font-weight="700">Connectly</text>
-  <text x="350" y="339" fill="#dcdafa" font-family="Arial, Helvetica, sans-serif" font-size="31">Share updates. Find people. Keep talking.</text>
-  <rect x="104" y="433" width="250" height="5" rx="2.5" fill="#80f1e8" />
+  <rect width="1200" height="630" fill="#111214"/>
+  <circle cx="1030" cy="320" r="280" fill="none" stroke="#292a2d" stroke-width="1.5"/>
+  <circle cx="1030" cy="320" r="204" fill="none" stroke="#292a2d" stroke-width="1.5"/>
+  <g transform="translate(850 150) scale(5)" opacity=".15">
+    <path d="M43 19H29a13 13 0 0 0 0 26h6l8 6v-9" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="46" cy="30" r="3" fill="#fff"/>
+  </g>
+  <rect x="100" y="72" width="64" height="64" rx="18" fill="#111214" stroke="#44464b"/>
+  <g transform="translate(100 72)"><path d="M43 19H29a13 13 0 0 0 0 26h6l8 6v-9" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="46" cy="30" r="4" fill="#fff"/></g>
+  <text x="182" y="119" fill="#fff" font-family="Arial, Helvetica, sans-serif" font-size="43" font-weight="700" letter-spacing="-1.5">connectly.</text>
+  <text x="100" y="304" fill="#fafafa" font-family="Arial, Helvetica, sans-serif" font-size="78" font-weight="700" letter-spacing="-3">A place to connect.</text>
+  <text x="104" y="374" fill="#b8babf" font-family="Arial, Helvetica, sans-serif" font-size="29">Your people. Your conversations. Your place.</text>
+  <path d="M104 486h70" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+  <text x="104" y="552" fill="#979aa2" font-family="Arial, Helvetica, sans-serif" font-size="23">connectly.lol</text>
 </svg>

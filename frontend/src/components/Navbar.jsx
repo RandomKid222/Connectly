@@ -4,27 +4,23 @@ import { useAuth } from '../context/AuthContext.jsx';
 import UserSearch from './UserSearch.jsx';
 import Avatar from './Avatar.jsx';
 import Notifications from './Notifications.jsx';
+import Brand from './Brand.jsx';
+import Icon from './Icon.jsx';
 
 export default function Navbar() {
-  const { user, logout, unreadCount } = useAuth();
+  const { user, logout } = useAuth();
   return (
-    <nav className="navbar">
-      <Link to="/" className="brand">Connectly</Link>
+    <header className="navbar"><div className="navbar-inner">
+      <Brand />
       <UserSearch />
       <div className="nav-links">
-        <Link to="/">Feed</Link>
-        <Link to="/messages" className="message-nav-link"
-          aria-label={unreadCount ? `Messages, ${unreadCount} unread` : 'Messages'}>
-          Messages {unreadCount > 0 && <span className="unread-dot" aria-hidden="true" />}
-        </Link>
         <Notifications />
-        <Link to="/settings">Settings</Link>
         <Link to={`/profile/${user.username}`} className="account-link">
           <Avatar url={user.avatar_url} username={user.username} className="nav-avatar" />
-          {user.username}
+          <span>{user.username}</span>
         </Link>
-        <button className="link-btn" onClick={logout}>Log out</button>
+        <button type="button" className="mobile-logout" aria-label="Log out" onClick={logout}><Icon name="logout" size={18} /></button>
       </div>
-    </nav>
+    </div></header>
   );
 }

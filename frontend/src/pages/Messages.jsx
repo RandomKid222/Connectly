@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import api from '../api';
 import { useAuth } from '../context/AuthContext.jsx';
 import Avatar from '../components/Avatar.jsx';
 import LocalTime from '../components/LocalTime.jsx';
 import ProtectedImage from '../components/ProtectedImage.jsx';
+import Icon from '../components/Icon.jsx';
 
 export default function Messages() {
   const { userId } = useParams();
@@ -25,7 +26,7 @@ export default function Messages() {
   activeRecipient.current = userId;
   const [search, setSearch] = useState('');
   const [results, setResults] = useState([]);
-  const bottomRef = useRef(null);
+  const messagesRef = useRef(null);
   const threadMutation = useRef(0);
   const conversationRequest = useRef(0);
 
@@ -117,9 +118,11 @@ export default function Messages() {
     };
   }, [userId, refreshUnread, loadConversations]);
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [thread]);
+  const scrollToBottom = useCallback(() => {
+    const element = messagesRef.current;
+    if (element) element.scrollTo({ top: element.scrollHeight, behavior: 'smooth' });
+  }, []);
+  useEffect(scrollToBottom, [thread, scrollToBottom]);
 
   useEffect(() => {
     if (!search.trim()) { setResults([]); return; }
@@ -174,8 +177,11 @@ export default function Messages() {
   }
 
   return (
+    <div className={'messages-page' + (userId ? ' has-conversation' : '')}>
+    <header className="page-heading compact-heading"><span className="eyebrow">KEEP THE CONVERSATION GOING</span><h1>Messages</h1><p>A little closer, one message at a time.</p></header>
     <div className="messages-layout">
       <aside className="conversation-list">
+        <div className="inbox-heading"><h2>Your inbox</h2><Icon name="message" size={20} /></div>
         <input
           aria-label="Search people to message"
           placeholder="Search people..."
@@ -196,6 +202,7 @@ export default function Messages() {
             ))}
           </div>
         )}
+        {!conversations.length && !search && <p className="conversation-empty">Find someone above and say hello.</p>}
         {conversations.map(conversation => (
           <button
             type="button"
@@ -217,30 +224,31 @@ export default function Messages() {
             </span>
           </button>
         ))}
-        {conversations.length === 0 && <p className="muted">Search for someone to start chatting.</p>}
       </aside>
 
       <section className="thread">
         {!userId ? (
-          <p className="muted centered">Select a conversation.</p>
+          <div className="inbox-empty"><span className="empty-icon"><Icon name="message" size={34} /></span><h2>A hello goes a long way.</h2>
+            <p>Choose a conversation, or search for someone new to talk to.</p></div>
         ) : (
           <>
             <div className="thread-header">
+              <Link to="/messages" className="mobile-back" aria-label="Back to inbox"><Icon name="back" size={21} /></Link>
               {otherUser && <Avatar url={otherUser.avatar_url} username={otherUser.username} className="conversation-avatar" />}
-              {otherUser?.username || 'Conversation'}
+              <span>{otherUser?.username || 'Conversation'}<small>Your conversation</small></span>
+              <Icon name="message" size={20} className="thread-header-icon" />
             </div>
             {threadError && <p className="error thread-error" role="alert">{threadError}</p>}
-            <div className="thread-messages">
+            <div className="thread-messages" ref={messagesRef}>
               {thread.map(message => (
                 <div key={message.id} className={`bubble ${message.sender_id === me.id ? 'mine' : 'theirs'}`}>
                   {message.image_url && <ProtectedImage src={message.image_url} className="message-image"
                     alt={'Photo from ' + (message.sender_id === me.id ? 'you' : otherUser?.username || 'this member')}
-                    onLoad={() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' })} />}
+                    onLoad={scrollToBottom} />}
                   {message.content && <p className="message-content">{message.content}</p>}
                   <LocalTime value={message.created_at} className="message-time" />
                 </div>
               ))}
-              <div ref={bottomRef} />
             </div>
             <form className="thread-composer" onSubmit={send}>
               {preview && <div className="attachment-preview message-attachment">
@@ -251,7 +259,7 @@ export default function Messages() {
               <div className="thread-input">
               <input ref={imageInput} type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={chooseImage} />
               <button type="button" className="attach-button" aria-label="Attach photo" disabled={sending || !canSend}
-                onClick={() => imageInput.current?.click()}>Photo</button>
+                onClick={() => imageInput.current?.click()}><Icon name="photo" size={20} /><span>Photo</span></button>
               <input
                 value={text}
                 aria-label="Message text"
@@ -260,12 +268,13 @@ export default function Messages() {
                 onChange={event => setText(event.target.value)}
                 placeholder="Type a message..."
               />
-              <button type="submit" disabled={sending || !canSend || (!text.trim() && !image)}>{sending ? 'Sending...' : 'Send'}</button>
+              <button type="submit" disabled={sending || !canSend || (!text.trim() && !image)}>{sending ? 'Sending...' : 'Send'}<Icon name="arrow" size={17} /></button>
               </div>
             </form>
           </>
         )}
       </section>
+    </div>
     </div>
   );
 }

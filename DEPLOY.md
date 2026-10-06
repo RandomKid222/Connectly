@@ -11,6 +11,12 @@ finish DNS and HTTPS for both purchased domains before deploying this ZIP.
 
 ## Updating an already deployed site
 
+**This design update only changes the frontend and documentation.** If your
+previous threads/photos/settings version is already deployed, there is no new
+backend setup, environment variable or Turso migration for the visual changes.
+The ZIP also includes the previous backend feature update for anyone who still
+needs it. See [UPDATE_GUIDE.md](UPDATE_GUIDE.md) for the shorter update checklist.
+
 Unzip the latest project ZIP. Copy its contents into your existing local GitHub
 repository, keeping `backend/`, `frontend/` and `render.yaml` at the top level.
 In GitHub Desktop, review the changes, commit and push them. Render and Netlify
@@ -27,10 +33,10 @@ existing repository and upload the changed files from the new ZIP:
 | `backend/middleware/` | `auth.js` |
 | `backend/routes/` | `auth.js`, `messages.js`, `posts.js`, `users.js`, new `settings.js`, new `notifications.js` |
 | `backend/tests/` | new `features.test.js`, new `cloudinary.test.js` |
-| `frontend/src/components/` | `Avatar.jsx`, `Navbar.jsx`, `PostCard.jsx`, `CommentSection.jsx`, `UserSearch.jsx`, new `LocalTime.jsx`, new `ProtectedImage.jsx`, new `PostComposer.jsx`, new `Notifications.jsx` |
+| `frontend/src/components/` | `Avatar.jsx`, `Navbar.jsx`, `PostCard.jsx`, `CommentSection.jsx`, `UserSearch.jsx`, `LocalTime.jsx`, `ProtectedImage.jsx`, `PostComposer.jsx`, `Notifications.jsx`, new `AuthLayout.jsx`, new `Brand.jsx`, new `Icon.jsx`, new `Sidebar.jsx` |
 | `frontend/src/utils/` | new `time.js` |
 | `frontend/src/context/` | `AuthContext.jsx` |
-| `frontend/src/pages/` | `Feed.jsx`, `ForgotPassword.jsx`, `Login.jsx`, `Messages.jsx`, `Profile.jsx`, `ResetPassword.jsx`, new `Thread.jsx`, new `Settings.jsx` |
+| `frontend/src/pages/` | `Feed.jsx`, `Signup.jsx`, `ForgotPassword.jsx`, `Login.jsx`, `Messages.jsx`, `Profile.jsx`, `ResetPassword.jsx`, `Thread.jsx`, `Settings.jsx` |
 | `frontend/src/` | `App.jsx`, `styles.css` |
 | `frontend/` | `index.html` |
 | `frontend/public/` | `_redirects`, `favicon.svg`, `favicon-32.png`, `apple-touch-icon.png`, `social-card.svg`, `social-card.png` |

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
+import AuthLayout from '../components/AuthLayout.jsx';
 
 export default function Signup() {
   const { signup } = useAuth();
@@ -20,9 +21,9 @@ export default function Signup() {
       navigate('/');
     } catch (err) {
       if (!err.response) {
-        setError('Cannot reach the backend. Check VITE_API_URL in Netlify and CORS_ORIGIN in Render.');
+        setError('Cannot reach the server. Please try again shortly.');
       } else if (err.response.status === 404) {
-        setError('Signup endpoint not found. Check that VITE_API_URL points to your Render backend.');
+        setError('Account creation is unavailable right now. Please try again shortly.');
       } else {
         setError(err.response.data?.error || `Signup failed (HTTP ${err.response.status}).`);
       }
@@ -32,11 +33,15 @@ export default function Signup() {
   }
 
   return (
-    <div className="auth-form">
+    <AuthLayout><div className="auth-form">
+      <span className="eyebrow">YOUR NEXT CONVERSATION AWAITS</span>
       <h1>Join Connectly</h1>
+      <p className="auth-intro">A small step toward finding your people.</p>
       <form onSubmit={submit}>
         <input
           placeholder="Username"
+          aria-label="Username"
+          autoComplete="username"
           value={username}
           onChange={e => setUsername(e.target.value)}
           minLength={3}
@@ -48,6 +53,8 @@ export default function Signup() {
         <input
           type="email"
           placeholder="Email"
+          aria-label="Email"
+          autoComplete="email"
           value={email}
           onChange={e => setEmail(e.target.value)}
           maxLength={254}
@@ -56,16 +63,18 @@ export default function Signup() {
         <input
           type="password"
           placeholder="Password (at least 12 characters)"
+          aria-label="Password (at least 12 characters)"
+          autoComplete="new-password"
           value={password}
           onChange={e => setPassword(e.target.value)}
           minLength={12}
           maxLength={128}
           required
         />
-        {error && <p className="error">{error}</p>}
+        {error && <p className="error" role="alert">{error}</p>}
         <button type="submit" disabled={busy}>{busy ? 'Creating account...' : 'Sign up'}</button>
       </form>
       <p>Already have an account? <Link to="/login">Log in</Link></p>
-    </div>
+    </div></AuthLayout>
   );
 }

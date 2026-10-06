@@ -1,5 +1,12 @@
 # Connectly
 
+The interface uses a charcoal-and-white design with a black conversation logo,
+desktop side navigation and a phone bottom menu. Feed cards, profiles, messages,
+login/signup, notifications and settings share the same visual style. The
+favicon, Apple touch icon and social preview use the new black branding.
+Existing appearance preferences are preserved; choose a theme preview in
+Settings and save it to your account. See [UPDATE_GUIDE.md](UPDATE_GUIDE.md).
+
 Primary public site: [connectly.lol](https://connectly.lol/).
 The alternate domain [contactly.lol](https://contactly.lol/) redirects to it.
 Follow [DOMAIN_SETUP.md](DOMAIN_SETUP.md) to connect both GoDaddy domains to

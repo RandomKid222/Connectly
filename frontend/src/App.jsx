@@ -1,7 +1,8 @@
-import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import React, { useLayoutEffect } from 'react';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './context/AuthContext.jsx';
 import Navbar from './components/Navbar.jsx';
+import Sidebar from './components/Sidebar.jsx';
 import Login from './pages/Login.jsx';
 import Signup from './pages/Signup.jsx';
 import ForgotPassword from './pages/ForgotPassword.jsx';
@@ -11,6 +12,12 @@ import Profile from './pages/Profile.jsx';
 import Messages from './pages/Messages.jsx';
 import Thread from './pages/Thread.jsx';
 import Settings from './pages/Settings.jsx';
+
+function RouteScroll() {
+  const { pathname } = useLocation();
+  useLayoutEffect(() => { window.scrollTo({ top: 0, left: 0, behavior: 'instant' }); }, [pathname]);
+  return null;
+}
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -24,9 +31,13 @@ export default function App() {
   if (loading) return <div className="centered">Loading...</div>;
 
   return (
-    <>
+    <div className={user ? 'app-shell' : 'public-shell'}>
+      <RouteScroll />
       {user && <Navbar />}
-      <div className="page-container">
+      <a href="#main-content" className="skip-link">Skip to content</a>
+      <div className={user ? 'app-body' : 'public-body'}>
+      {user && <Sidebar />}
+      <main className="page-container" id="main-content">
         <Routes>
           <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
           <Route path="/signup" element={user ? <Navigate to="/" /> : <Signup />} />
@@ -40,7 +51,8 @@ export default function App() {
           <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
+      </main>
       </div>
-    </>
+    </div>
   );
 }

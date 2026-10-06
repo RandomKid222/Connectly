@@ -5,6 +5,7 @@ import CommentSection from './CommentSection.jsx';
 import Avatar from './Avatar.jsx';
 import LocalTime from './LocalTime.jsx';
 import ProtectedImage from './ProtectedImage.jsx';
+import Icon from './Icon.jsx';
 
 export default function PostCard({ post, onDelete, expanded = false }) {
   const [liked, setLiked] = useState(post.likedByMe);
@@ -47,13 +48,13 @@ export default function PostCard({ post, onDelete, expanded = false }) {
   }
 
   return (
-    <div className="post-card">
+    <article className="post-card">
       <div className="post-header">
         <Link to={`/profile/${post.author.username}`} className="post-author">
           <Avatar url={post.author.avatar_url} username={post.author.username} className="post-avatar" />
           <span>{post.author.username}</span>
         </Link>
-        <LocalTime className="post-date" value={post.created_at} />
+        <span className="post-meta"><LocalTime className="post-date" value={post.created_at} /><span className="thread-tag">Thread</span></span>
       </div>
       <h2 className="post-title"><Link to={'/threads/' + post.id}>{post.title || post.content?.slice(0, 100) || 'Photo thread'}</Link></h2>
       {post.content && <p className="post-content">{post.content}</p>}
@@ -62,18 +63,16 @@ export default function PostCard({ post, onDelete, expanded = false }) {
         : <img className="post-image" src={post.image_url.startsWith('https://') ? post.image_url : API_ORIGIN + post.image_url} alt={'Photo posted by ' + post.author.username} />)}
       <div className="post-actions">
         <button className={liked ? 'liked' : ''} onClick={toggleLike} disabled={busy} aria-pressed={liked}>
-          ↑ {likeCount} {liked ? 'Upvoted' : 'Upvote'}
+          <Icon name="up" size={17} />{likeCount}<span>{liked ? 'Upvoted' : 'Upvote'}</span>
         </button>
         <button onClick={() => setShowComments(s => !s)} aria-label={'Discussion, ' + commentCount + ' comments'}>
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true">
-            <path d="M21 11a9 9 0 0 1-9 9H4l-3 2 1-6a9 9 0 1 1 19-5Z" />
-          </svg> {commentCount}
+          <Icon name="message" size={17} />{commentCount}<span>Replies</span>
         </button>
-        {!expanded && <Link className="thread-link" to={'/threads/' + post.id}>Open thread</Link>}
+        {!expanded && <Link className="thread-link" to={'/threads/' + post.id}>Open thread<Icon name="arrow" size={16} /></Link>}
         {onDelete && <button onClick={handleDelete} className="danger">Delete</button>}
       </div>
       {actionError && <p className="error" role="alert">{actionError}</p>}
       {showComments && <CommentSection postId={post.id} onCreated={() => setCommentCount(count => count + 1)} />}
-    </div>
+    </article>
   );
 }

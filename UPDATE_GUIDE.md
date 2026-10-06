@@ -1,10 +1,47 @@
-# Update Connectly: threads, photos, activity and settings
+# Update Connectly: the charcoal design
+
+This release refreshes the interface with a black conversation-mark logo, new
+favicon and social preview, charcoal colours, clearer thread cards, profile
+headers, a redesigned inbox and account pages, and visual theme choices.
+Desktop has a side menu; phones have a bottom menu. The bell and search stay
+in the top bar. Your saved light/dark/device preference is preserved.
+
+## Updating from the previous threads-and-settings ZIP
+
+Only the frontend and documentation changed in this design update. The backend,
+database schema, environment variables and lockfiles are unchanged.
+
+1. Extract this ZIP and copy its contents into your existing repository,
+   preserving the `backend/` and `frontend/` folders.
+2. Commit and push. Your existing Netlify project builds the new frontend.
+   If you upload files through GitHub's website, include the four new components
+   `AuthLayout.jsx`, `Brand.jsx`, `Icon.jsx` and `Sidebar.jsx` in
+   `frontend/src/components/`, along with the updated frontend source and assets.
+   `DEPLOY.md` lists the complete repository paths.
+3. Wait for Netlify to finish successfully, then open https://connectly.lol.
+   An old open tab or cached tab icon may need a reload or a new tab.
+   No Render environment change or manual Turso edit is needed for this design.
+
+Use Settings → Appearance to try the theme preview cards, then Save settings.
+On a phone, open Messages to see the inbox. Choose a conversation and use its
+back arrow to return to the inbox. Log out is in the desktop side menu or the
+top-right arrow icon on a phone.
+
+The production build, all 10 backend tests and desktop/mobile browser checks
+passed before this ZIP was made. Browser checks cover search, navigation,
+threads and nested replies, photo DMs and profiles, editing a bio, notifications,
+privacy approval, theme cards and persistence, exports, passwords and sessions,
+mobile inbox navigation, logout, and 320 px/390 px layouts without horizontal
+overflow or browser runtime errors. Cloudinary checks use simulated uploads;
+live account configuration should still be checked after deployment.
+
+## Previous feature update: threads, photos, activity and settings
 
 This ZIP contains the whole updated project. It uses your existing GitHub repo,
 Render backend, Netlify frontend, Turso database, Cloudinary account and Brevo setup.
 The main site remains https://connectly.lol.
 
-## Install this update
+### Install the feature update if you have not done so yet
 
 1. Extract the ZIP. Copy its contents into your existing local repository so
    `backend/`, `frontend/` and `render.yaml` stay at the repository root.

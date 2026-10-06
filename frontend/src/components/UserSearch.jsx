@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import api from '../api';
 import Avatar from './Avatar.jsx';
+import Icon from './Icon.jsx';
 
 export default function UserSearch() {
   const [query, setQuery] = useState('');
@@ -56,6 +57,7 @@ export default function UserSearch() {
 
   return (
     <div className="user-search" ref={rootRef}>
+      <Icon name="search" size={18} />
       <input
         aria-label="Search users"
         placeholder="Search users..."

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api';
 import { useAuth } from '../context/AuthContext.jsx';
+import AuthLayout from '../components/AuthLayout.jsx';
 
 export default function ResetPassword() {
   const [token] = useState(() => new URLSearchParams(window.location.hash.slice(1)).get('token') || '');
@@ -39,7 +40,8 @@ export default function ResetPassword() {
   }
 
   return (
-    <div className="auth-form">
+    <AuthLayout><div className="auth-form">
+      <span className="eyebrow">A FRESH START</span>
       <h1>Set a new password</h1>
       {success ? <p role="status">Password updated. <Link to="/login">Log in</Link> with your new password.</p> :
         token ? <form onSubmit={submit}>
@@ -53,6 +55,6 @@ export default function ResetPassword() {
           <button type="submit" disabled={busy}>{busy ? 'Updating...' : 'Update password'}</button>
         </form> : <p>Missing reset link. <Link to="/forgot-password">Request another link</Link>.</p>}
       <p><Link to="/forgot-password">Request a new link</Link></p>
-    </div>
+    </div></AuthLayout>
   );
 }

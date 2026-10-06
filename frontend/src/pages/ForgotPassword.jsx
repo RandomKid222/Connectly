@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api';
+import AuthLayout from '../components/AuthLayout.jsx';
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('');
@@ -24,7 +25,8 @@ export default function ForgotPassword() {
   }
 
   return (
-    <div className="auth-form">
+    <AuthLayout><div className="auth-form">
+      <span className="eyebrow">LET'S GET YOU BACK IN</span>
       <h1>Reset your password</h1>
       <p>Enter the email you used to sign up. If it matches an account, we’ll send a link.</p>
       <form onSubmit={submit}>
@@ -35,6 +37,6 @@ export default function ForgotPassword() {
         <button type="submit" disabled={busy}>{busy ? 'Sending...' : 'Send reset link'}</button>
       </form>
       <p><Link to="/login">Back to login</Link></p>
-    </div>
+    </div></AuthLayout>
   );
 }

@@ -1,7 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import api from '../api';
+import { useAuth } from '../context/AuthContext.jsx';
+import Avatar from './Avatar.jsx';
+import Icon from './Icon.jsx';
 
 export default function PostComposer({ onPosted }) {
+  const { user } = useAuth();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [image, setImage] = useState(null);
@@ -44,6 +48,10 @@ export default function PostComposer({ onPosted }) {
     } finally { setBusy(false); }
   }
   return <form className="new-post" onSubmit={submit} aria-label="Create a thread">
+    <div className="composer-heading"><Avatar url={user.avatar_url} username={user.username} />
+      <span><strong>What's on your mind?</strong><small>Give your thought a place to grow.</small></span>
+      <Icon name="plus" size={20} />
+    </div>
     <input className="thread-title-input" aria-label="Thread title" placeholder="Start a thread: add a title"
       maxLength={200} required value={title} onChange={event => setTitle(event.target.value)} disabled={busy} />
     <textarea aria-label="Thread text" maxLength={5000} placeholder="Share a story, ask a question, or add a photo..."
@@ -54,8 +62,8 @@ export default function PostComposer({ onPosted }) {
     </div>}
     <div className="new-post-actions">
       <input ref={fileInput} type="file" accept="image/jpeg,image/png,image/webp" onChange={chooseImage} hidden />
-      <button type="button" className="secondary-button" disabled={busy} onClick={() => fileInput.current?.click()}>Add photo</button>
-      <button type="submit" disabled={busy || !title.trim()}>{busy ? 'Publishing...' : 'Publish thread'}</button>
+      <button type="button" className="secondary-button" disabled={busy} onClick={() => fileInput.current?.click()}><Icon name="photo" size={18} />Add photo</button>
+      <button type="submit" disabled={busy || !title.trim()}>{busy ? 'Publishing...' : 'Publish thread'}<Icon name="arrow" size={16} /></button>
     </div>
     {error && <p className="error" role="alert">{error}</p>}
   </form>;

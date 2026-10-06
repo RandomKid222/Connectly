@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import api from '../api';
 import { useAuth } from '../context/AuthContext.jsx';
 import PostCard from '../components/PostCard.jsx';
+import Icon from '../components/Icon.jsx';
 
 export default function Thread() {
   const { id } = useParams();
@@ -35,7 +36,7 @@ export default function Thread() {
     return () => { active = false; clearInterval(timer); document.removeEventListener('visibilitychange', visible); };
   }, [id]);
   return <div className="thread-page">
-    <Link className="back-link" to="/">← Back to feed</Link>
+    <Link className="back-link" to="/"><Icon name="back" size={18} />Back to feed</Link>
     {error && <p className="error" role="alert">{error}</p>}
     {loading ? <p className="muted">Loading thread...</p> : post &&
       <PostCard key={post.id} post={post} expanded onDelete={post.author.id === user.id ? () => navigate('/') : undefined} />}

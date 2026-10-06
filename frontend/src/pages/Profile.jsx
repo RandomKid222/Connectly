@@ -6,6 +6,7 @@ import PostCard from '../components/PostCard.jsx';
 import Avatar from '../components/Avatar.jsx';
 import PostComposer from '../components/PostComposer.jsx';
 import LocalTime from '../components/LocalTime.jsx';
+import Icon from '../components/Icon.jsx';
 
 export default function Profile() {
   const { username } = useParams();
@@ -15,6 +16,7 @@ export default function Profile() {
   const [posts, setPosts] = useState([]);
   const [bioDraft, setBioDraft] = useState('');
   const [editing, setEditing] = useState(false);
+  const [bioBusy, setBioBusy] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
   const [avatarBusy, setAvatarBusy] = useState(false);
@@ -98,11 +100,16 @@ export default function Profile() {
   }
 
   async function saveBio() {
+    if (bioBusy) return;
+    setBioBusy(true); setAvatarError('');
+    try {
     const res = await api.put('/users/me/update', { bio: bioDraft });
     profileMutation.current += 1;
     setProfile(current => ({ ...current, bio: res.data.user.bio }));
     setUser(current => ({ ...current, bio: res.data.user.bio }));
     setEditing(false);
+    } catch (error) { setAvatarError(error.response?.data?.error || 'Could not save your bio. Please try again.'); }
+    finally { setBioBusy(false); }
   }
 
   async function uploadAvatar(event) {
@@ -173,10 +180,13 @@ export default function Profile() {
   return (
     <div className="profile">
       <div className="profile-header">
+        <div className="profile-cover" aria-hidden="true"><img src="/favicon.svg" alt="" /><span>your place. your perspective.</span></div>
+        <div className="profile-content">
         <div className="profile-identity">
           <Avatar url={profile.avatar_url} username={profile.username} className="profile-avatar" />
           <div>
             <h1>{profile.username}</h1>
+            <span className="profile-handle">@{profile.username}</span>
             <p className="muted">Joined <LocalTime value={profile.created_at} /></p>
             {profile.isSelf && (
               <div className="avatar-actions">
@@ -195,9 +205,9 @@ export default function Profile() {
         {profile.isSelf ? (
           editing ? (
             <div className="bio-edit">
-              <textarea maxLength={5000} value={bioDraft} onChange={e => setBioDraft(e.target.value)} />
-              <button onClick={saveBio}>Save</button>
-              <button onClick={() => setEditing(false)}>Cancel</button>
+              <textarea aria-label="Your bio" maxLength={5000} value={bioDraft} disabled={bioBusy} onChange={e => setBioDraft(e.target.value)} />
+              <button onClick={saveBio} disabled={bioBusy}>{bioBusy ? 'Saving...' : 'Save'}</button>
+              <button onClick={() => setEditing(false)} disabled={bioBusy}>Cancel</button>
             </div>
           ) : (
             <>
@@ -215,8 +225,9 @@ export default function Profile() {
             {profile.canMessage && <button onClick={() => navigate(`/messages/${profile.id}`)}>Message</button>}
           </>
         )}
+        {profile.profile_visibility === 'private' && <span className="privacy-badge"><Icon name="lock" size={14} />Private profile</span>}
         {profile.canViewPosts && <div className="profile-stats">
-          <span><strong>{profile.postCount}</strong> posts</span>
+          <span><strong>{profile.postCount}</strong> threads</span>
           <button type="button" className="stat-button" onClick={() => showFollowList('followers')}><strong>{profile.followerCount}</strong> followers</button>
           <button type="button" className="stat-button" onClick={() => showFollowList('following')}><strong>{profile.followingCount}</strong> following</button>
         </div>}
@@ -229,10 +240,12 @@ export default function Profile() {
             <Avatar url={person.avatar_url} username={person.username} /> {person.username}
           </button>)}
         </section>}
+        </div>
       </div>
       {profile.isSelf && <PostComposer onPosted={posted} />}
 
       <div className="profile-posts">
+        <div className="section-heading"><h2>Threads & moments</h2><Icon name="message" size={20} /></div>
         {!profile.canViewPosts ? <p className="muted">This member shares threads with approved followers.</p> : posts.length === 0 ? (
           <p className="muted">No threads yet.</p>
         ) : (

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api';
 import { useAuth } from '../context/AuthContext.jsx';
+import Icon from '../components/Icon.jsx';
 
 export default function Settings() {
   const { user, setUser } = useAuth();
@@ -63,20 +64,37 @@ export default function Settings() {
     finally { setExporting(false); }
   }
   return <div className="settings-page">
-    <h1>Settings</h1>
-    <p className="muted">Manage how you use Connectly, {user.username}.</p>
+    <header className="page-heading"><span className="eyebrow">MAKE YOURSELF AT HOME</span><h1>Settings</h1>
+      <p>Your space, your preferences. Make Connectly feel like you.</p></header>
+    <nav className="settings-nav" aria-label="Settings sections">
+      <a href="#appearance"><Icon name="sun" size={16} />Appearance</a>
+      <a href="#privacy"><Icon name="lock" size={16} />Privacy</a>
+      <a href="#discoverability"><Icon name="eye" size={16} />Discoverability</a>
+      <a href="#data-sharing"><Icon name="download" size={16} />Data sharing</a>
+      <a href="#security"><Icon name="shield" size={16} />Security</a>
+    </nav>
     {error && <p className="error" role="alert">{error}</p>}
     {!settings ? !error && <p className="muted">Loading settings...</p> : <form onSubmit={save}>
-      <fieldset className="settings-card" disabled={busy}>
-        <legend>Appearance</legend>
+      <fieldset className="settings-card" id="appearance" disabled={busy}>
+        <legend><Icon name="sun" size={19} />Appearance</legend>
+        <div className="theme-options" aria-label="Theme previews">
+          {['light', 'dark', 'system'].map(theme => <button key={theme} type="button"
+            className={'theme-option ' + (settings.theme === theme ? 'selected' : '')}
+            aria-pressed={settings.theme === theme} aria-label={'Use ' + theme + ' theme'} onClick={() => change('theme', theme)}>
+            <span className={'theme-preview preview-' + theme} aria-hidden="true"><span /><span /><span /></span>
+            <span><Icon name={theme === 'light' ? 'sun' : theme === 'dark' ? 'moon' : 'monitor'} size={16} />
+              {theme === 'system' ? 'Device' : theme === 'light' ? 'Light' : 'Dark'}
+              {settings.theme === theme && <Icon name="check" size={15} />}</span>
+          </button>)}
+        </div>
         <label className="setting-row"><span>Theme<span className="setting-help">Choose your look on this account.</span></span>
           <select aria-label="Theme" value={settings.theme} onChange={event => change('theme', event.target.value)}>
             <option value="system">Use device setting</option><option value="light">Light</option><option value="dark">Dark</option>
           </select>
         </label>
       </fieldset>
-      <fieldset className="settings-card" disabled={busy}>
-        <legend>Privacy</legend>
+      <fieldset className="settings-card" id="privacy" disabled={busy}>
+        <legend><Icon name="lock" size={19} />Privacy</legend>
         <label className="setting-row"><span>Profile visibility
           <span className="setting-help">Private profiles share their bio and threads with approved followers. Existing followers keep access. Your name and profile photo remain visible.</span></span>
           <select aria-label="Profile visibility" value={settings.profile_visibility} onChange={event => change('profile_visibility', event.target.value)}>
@@ -90,15 +108,15 @@ export default function Settings() {
           </select>
         </label>
       </fieldset>
-      <fieldset className="settings-card" disabled={busy}>
-        <legend>Discoverability</legend>
+      <fieldset className="settings-card" id="discoverability" disabled={busy}>
+        <legend><Icon name="eye" size={19} />Discoverability</legend>
         <label className="setting-row"><span>Appear in user search<span className="setting-help">People with your profile link can still open it, subject to your privacy setting.</span></span>
           <input type="checkbox" checked={settings.searchable} onChange={event => change('searchable', event.target.checked)} /></label>
         <label className="setting-row"><span>Show threads in Explore<span className="setting-help">Your approved followers can still see your threads in their feed.</span></span>
           <input type="checkbox" checked={settings.show_in_explore} onChange={event => change('show_in_explore', event.target.checked)} /></label>
       </fieldset>
-      <fieldset className="settings-card" disabled={busy}>
-        <legend>Data sharing</legend>
+      <fieldset className="settings-card" id="data-sharing" disabled={busy}>
+        <legend><Icon name="download" size={19} />Data sharing</legend>
         <label className="setting-row"><span>Share my follower and following lists<span className="setting-help">Turn this off to keep the member lists visible only to you. Counts may still appear on your profile.</span></span>
           <input type="checkbox" checked={settings.share_follow_lists} onChange={event => change('share_follow_lists', event.target.checked)} /></label>
         <p className="setting-help">Connectly uses hosting, image storage, and email providers to operate. These controls manage what other members see.</p>
@@ -106,11 +124,12 @@ export default function Settings() {
           {exporting ? 'Preparing...' : 'Download my data'}</button>
         <p className="setting-help">Downloads your account details, text posts, comments, conversations, and follow relationships as JSON. Photo files are not included.</p>
       </fieldset>
-      <button className="primary-button" type="submit" disabled={busy}>{busy ? 'Saving...' : 'Save settings'}</button>
+      <div className="settings-save"><button className="primary-button" type="submit" disabled={busy}>{busy ? 'Saving...' : 'Save settings'}<Icon name="check" size={17} /></button>
       {message && <p className="success" role="status">{message}</p>}
+      </div>
     </form>}
-    <section className="settings-card">
-      <h2>Security</h2>
+    <section className="settings-card" id="security">
+      <h2><Icon name="shield" size={19} />Security</h2>
       <p className="setting-help">Change your password or sign out other sessions. You stay signed in on this device.</p>
       <form className="password-form" onSubmit={password}>
         <label>Current password<input type="password" autoComplete="current-password" required maxLength={128}
