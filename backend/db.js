@@ -17,6 +17,8 @@ const schema = [
     email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL,
     bio TEXT DEFAULT '', avatar_url TEXT DEFAULT '', avatar_public_id TEXT DEFAULT '',
     token_version INTEGER NOT NULL DEFAULT 0,
+    role TEXT NOT NULL DEFAULT 'member' CHECK(role IN ('member', 'admin')),
+    is_verified INTEGER NOT NULL DEFAULT 0 CHECK(is_verified IN (0, 1)),
     profile_visibility TEXT NOT NULL DEFAULT 'public',
     message_permission TEXT NOT NULL DEFAULT 'everyone',
     searchable INTEGER NOT NULL DEFAULT 1,
@@ -94,6 +96,13 @@ const schema = [
     PRIMARY KEY (post_id, user_id),
     FOREIGN KEY (post_id, option_id) REFERENCES poll_options(post_id, id) ON DELETE CASCADE
   )`,
+  `CREATE TABLE IF NOT EXISTS admin_actions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    actor_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    action TEXT NOT NULL, target_id INTEGER NOT NULL,
+    target_label TEXT NOT NULL, details TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  )`,
   `CREATE TABLE IF NOT EXISTS notifications (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -129,6 +138,8 @@ async function init() {
   await client.execute('CREATE INDEX IF NOT EXISTS idx_messages_unread ON messages(receiver_id, read_at, sender_id)');
   const additions = {
     users: [
+      ["role", "TEXT NOT NULL DEFAULT 'member' CHECK(role IN ('member', 'admin'))"],
+      ["is_verified", "INTEGER NOT NULL DEFAULT 0 CHECK(is_verified IN (0, 1))"],
       ["profile_visibility", "TEXT NOT NULL DEFAULT 'public'"],
       ["message_permission", "TEXT NOT NULL DEFAULT 'everyone'"],
       ["searchable", "INTEGER NOT NULL DEFAULT 1"],

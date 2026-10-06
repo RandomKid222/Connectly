@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import api from '../api';
 import Avatar from './Avatar.jsx';
 import LocalTime from './LocalTime.jsx';
+import VerifiedBadge from './VerifiedBadge.jsx';
 
 export default function CommentSection({ postId, onCreated }) {
   const [comments, setComments] = useState([]);
@@ -65,7 +66,7 @@ export default function CommentSection({ postId, onCreated }) {
       <div className="comment">
         <Avatar url={comment.avatar_url} username={comment.username} className="comment-avatar" />
         <div className="comment-body">
-          <div className="comment-meta"><Link className="comment-author" to={'/profile/' + comment.username}>{comment.username}</Link>
+          <div className="comment-meta"><Link className="comment-author" to={'/profile/' + comment.username}>{comment.username}<VerifiedBadge verified={comment.is_verified} /></Link>
             <LocalTime value={comment.created_at} className="comment-date" /></div>
           <p>{comment.content}</p>
           {depth < 7 && <button type="button" className="reply-button" onClick={() => {

@@ -13,6 +13,7 @@ import Messages from './pages/Messages.jsx';
 import Thread from './pages/Thread.jsx';
 import Settings from './pages/Settings.jsx';
 import SavedThreads from './pages/SavedThreads.jsx';
+import Admin from './pages/Admin.jsx';
 
 function RouteScroll() {
   const { pathname } = useLocation();
@@ -51,6 +52,7 @@ export default function App() {
           <Route path="/threads/:id" element={<PrivateRoute><Thread /></PrivateRoute>} />
           <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
           <Route path="/saved" element={<PrivateRoute><SavedThreads /></PrivateRoute>} />
+          <Route path="/admin" element={<PrivateRoute>{user?.role === 'admin' ? <Admin /> : <Navigate to="/" replace />}</PrivateRoute>} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </main>

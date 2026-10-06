@@ -49,10 +49,9 @@ export default function Feed() {
     setPosts(current => current.filter(post => post.id !== id));
   }
   return <div className="content-layout"><div className="feed">
-    <header className="page-heading journal-hero"><span className="eyebrow">{tab === 'feed' ? 'YOUR PERSONAL EDITION' : 'THE WIDER WORLD'}</span>
-      <h1>{tab === 'feed' ? <>YOUR PEOPLE.<br /><em>PLOT TWISTS.</em></> : <>NEW FACES.<br /><em>FRESH TAKES.</em></>}</h1>
-      <p>{tab === 'feed' ? 'Whatever’s happening, bring it here.' : 'Step outside your circle. Find something that clicks.'}</p>
-      <span className="hero-sticker" aria-hidden="true"><Icon name="spark" size={46} /><span>STAY<br />CURIOUS</span></span>
+    <header className="page-heading journal-hero"><span className="eyebrow">{tab === 'feed' ? 'Your feed' : 'Explore'}</span>
+      <h1>{tab === 'feed' ? 'Stay close, stay connected.' : 'Discover your community'}</h1>
+      <p>{tab === 'feed' ? 'Latest threads from you and the people you follow.' : 'Find new people and conversations.'}</p>
     </header>
     <PostComposer onPosted={posted} pollPrompt={pollPrompt} />
     <div className="feed-toolbar"><div className="tabs" aria-label="Feed view">
@@ -68,16 +67,16 @@ export default function Feed() {
       : posts.map(post => <PostCard key={post.id} post={post} onDelete={post.author.id === user.id ? deleted : undefined} />)}
   </div><aside className="feed-aside">
     <section className="welcome-card"><Avatar url={user.avatar_url} username={user.username} className="welcome-avatar" />
-      <span className="eyebrow">YOUR CORNER</span><h2>{user.username}</h2><p>Make a little room for whatever makes you, you.</p>
-      <Link to={'/profile/' + user.username}>Make it yours <Icon name="arrow" size={16} /></Link>
+      <span className="eyebrow">Your account</span><h2>{user.username}</h2><p>Update your photo, bio and profile.</p>
+      <Link to={'/profile/' + user.username}>View your profile <Icon name="arrow" size={16} /></Link>
     </section>
-    <section className="discover-card"><span className="eyebrow">THE QUESTION CORNER</span>
-      <Icon name="poll" size={40} /><h2>SETTLE THE<br />DEBATE.</h2>
-      <p>Big opinions. Tiny dilemmas. Let your people pick a side.</p>
+    <section className="discover-card"><span className="eyebrow">Community polls</span>
+      <Icon name="poll" size={30} /><h2>Ask your community</h2>
+      <p>Start a poll and see what your people think.</p>
       <button type="button" onClick={() => setPollPrompt(current => current + 1)}>Make a poll <Icon name="arrow" size={16} /></button>
     </section>
-    <section className="clipping-note"><Icon name="bookmark" size={23} /><span>THE GOOD STUFF STAYS.</span><Link to="/saved">Open your saved threads <Icon name="arrow" size={16} /></Link></section>
+    <section className="clipping-note"><Icon name="bookmark" size={23} /><span>Saved for later</span><Link to="/saved">Open your saved threads <Icon name="arrow" size={16} /></Link></section>
     <section className="rail-links"><Link to="/settings"><Icon name="shield" size={17} />Your privacy, your choice</Link>
-      <p>Connectly · The social side</p></section>
+      <p>Connectly · Stay close, stay connected.</p></section>
   </aside></div>;
 }

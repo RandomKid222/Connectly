@@ -7,6 +7,7 @@ import Avatar from '../components/Avatar.jsx';
 import PostComposer from '../components/PostComposer.jsx';
 import LocalTime from '../components/LocalTime.jsx';
 import Icon from '../components/Icon.jsx';
+import VerifiedBadge from '../components/VerifiedBadge.jsx';
 
 export default function Profile() {
   const { username } = useParams();
@@ -180,12 +181,12 @@ export default function Profile() {
   return (
     <div className="profile">
       <div className="profile-header">
-        <div className="profile-cover" aria-hidden="true"><img src="/favicon.svg" alt="" /><span>your place. your perspective.</span></div>
+        <div className="profile-cover" aria-hidden="true"><img src="/favicon.svg" alt="" /><span>Stay close, stay connected.</span></div>
         <div className="profile-content">
         <div className="profile-identity">
           <Avatar url={profile.avatar_url} username={profile.username} className="profile-avatar" />
           <div>
-            <h1>{profile.username}</h1>
+            <h1>{profile.username}<VerifiedBadge verified={profile.is_verified} /></h1>
             <span className="profile-handle">@{profile.username}</span>
             <p className="muted">Joined <LocalTime value={profile.created_at} /></p>
             {profile.isSelf && (
@@ -237,7 +238,7 @@ export default function Profile() {
             <button type="button" onClick={() => setFollowList(null)}>Close</button></div>
           {!followList.users.length && <p className="muted">No members yet.</p>}
           {followList.users.map(person => <button type="button" key={person.id} onClick={() => navigate('/profile/' + person.username)}>
-            <Avatar url={person.avatar_url} username={person.username} /> {person.username}
+            <Avatar url={person.avatar_url} username={person.username} /> {person.username}<VerifiedBadge verified={person.is_verified} />
           </button>)}
         </section>}
         </div>
@@ -245,7 +246,7 @@ export default function Profile() {
       {profile.isSelf && <PostComposer onPosted={posted} />}
 
       <div className="profile-posts">
-        <div className="section-heading"><h2>Threads & moments</h2><Icon name="message" size={20} /></div>
+        <div className="section-heading"><h2>Threads</h2><Icon name="message" size={20} /></div>
         {!profile.canViewPosts ? <p className="muted">This member shares threads with approved followers.</p> : posts.length === 0 ? (
           <p className="muted">No threads yet.</p>
         ) : (

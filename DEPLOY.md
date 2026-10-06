@@ -12,12 +12,14 @@ finish DNS and HTTPS for both purchased domains before deploying this ZIP.
 
 ## Updating an already deployed site
 
-**This ink-and-acid update changes both frontend and backend.** Render adds
-the bookmarks, poll options and poll votes tables automatically on startup.
+**This slogan, verification and administration update changes frontend and backend.**
+Render adds account role/verification columns and the admin action history
+table automatically on startup, along with any missing older feature tables.
 Deploy the existing Render service first, then let Netlify rebuild. No new
 service, environment variable or dependency is needed. Keep your current
 credentials on their services. See [UPDATE_GUIDE.md](UPDATE_GUIDE.md) for the
-shorter update checklist.
+shorter update checklist. Follow [ADMIN_GUIDE.md](ADMIN_GUIDE.md) to make your
+existing account an administrator after deployment.
 
 Unzip the latest project ZIP. Copy its contents into your existing local GitHub
 repository, keeping `backend/`, `frontend/` and `render.yaml` at the top level.
@@ -33,21 +35,21 @@ existing repository and upload the changed files from the new ZIP:
 | --- | --- |
 | `backend/` | `db.js`, `server.js`, `package.json`, `package-lock.json`, `email.js`, `media.js`, `access.js`, `notifications.js`, `.env.example`, `.node-version`, `.gitignore` |
 | `backend/middleware/` | `auth.js` |
-| `backend/routes/` | `auth.js`, `messages.js`, `posts.js`, `users.js`, `settings.js`, `notifications.js` |
-| `backend/tests/` | `features.test.js`, `cloudinary.test.js`, new `community.test.js` |
+| `backend/routes/` | `auth.js`, `messages.js`, `posts.js`, `users.js`, `settings.js`, `notifications.js`, new `admin.js` |
+| `backend/tests/` | `features.test.js`, `cloudinary.test.js`, `community.test.js`, new `admin.test.js` |
 | `backend/uploads/` | `.gitkeep` only |
-| `frontend/src/components/` | `Avatar.jsx`, `Navbar.jsx`, `PostCard.jsx`, `CommentSection.jsx`, `UserSearch.jsx`, `LocalTime.jsx`, `ProtectedImage.jsx`, `PostComposer.jsx`, `Notifications.jsx`, `AuthLayout.jsx`, `Brand.jsx`, `Icon.jsx`, `Sidebar.jsx`, new `Poll.jsx` |
+| `frontend/src/components/` | `Avatar.jsx`, `Navbar.jsx`, `PostCard.jsx`, `CommentSection.jsx`, `UserSearch.jsx`, `LocalTime.jsx`, `ProtectedImage.jsx`, `PostComposer.jsx`, `Notifications.jsx`, `AuthLayout.jsx`, `Brand.jsx`, `Icon.jsx`, `Sidebar.jsx`, `Poll.jsx`, new `VerifiedBadge.jsx` |
 | `frontend/src/utils/` | `time.js` |
 | `frontend/src/context/` | `AuthContext.jsx` |
-| `frontend/src/pages/` | `Feed.jsx`, `Signup.jsx`, `ForgotPassword.jsx`, `Login.jsx`, `Messages.jsx`, `Profile.jsx`, `ResetPassword.jsx`, `Thread.jsx`, `Settings.jsx`, new `SavedThreads.jsx` |
-| `frontend/src/` | `App.jsx`, `main.jsx`, `api.js`, `styles.css`, new `creative.css` |
+| `frontend/src/pages/` | `Feed.jsx`, `Signup.jsx`, `ForgotPassword.jsx`, `Login.jsx`, `Messages.jsx`, `Profile.jsx`, `ResetPassword.jsx`, `Thread.jsx`, `Settings.jsx`, `SavedThreads.jsx`, new `Admin.jsx` |
+| `frontend/src/` | `App.jsx`, `main.jsx`, `api.js`, `styles.css`, `creative.css`, new `refinement.css` |
 | `frontend/` | `index.html`, `package.json`, `package-lock.json`, `vite.config.js`, `.node-version`, `.gitignore` |
 | `frontend/public/` | `_redirects`, `favicon.svg`, `favicon-32.png`, `apple-touch-icon.png`, `social-card.svg`, `social-card.png` |
-| repository root | `.gitignore`, `render.yaml`, `README.md`, `DEPLOY.md`, `DOMAIN_SETUP.md`, `UPDATE_GUIDE.md` |
+| repository root | `.gitignore`, `render.yaml`, `README.md`, `DEPLOY.md`, `DOMAIN_SETUP.md`, `UPDATE_GUIDE.md`, new `ADMIN_GUIDE.md` |
 
 Commit the uploaded files. Keep the folder paths exactly as listed; do not
 upload the ZIP itself. Both services need the new code for polls and saved
-threads to work. For this release, follow [UPDATE_GUIDE.md](UPDATE_GUIDE.md).
+threads and administration to work. For this release, follow [UPDATE_GUIDE.md](UPDATE_GUIDE.md).
 
 The public URL is `https://connectly.lol/`. `connectlyplace.netlify.app`
 remains the project's Netlify hostname and the DNS CNAME target. If you change
@@ -82,6 +84,7 @@ README.md
 DEPLOY.md
 DOMAIN_SETUP.md
 UPDATE_GUIDE.md
+ADMIN_GUIDE.md
 ```
 
 Upload all project files under `backend/` and `frontend/`, including the lockfiles,

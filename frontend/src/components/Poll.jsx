@@ -20,7 +20,7 @@ export default function Poll({ postId, poll }) {
   }
   if (!current) return null;
   return <section className="poll-card" aria-label="Thread poll">
-    <div className="poll-heading"><span><Icon name="poll" size={16} />TAKE A SIDE</span><small>{current.totalVotes} {current.totalVotes === 1 ? 'vote' : 'votes'}</small></div>
+    <div className="poll-heading"><span><Icon name="poll" size={16} />Poll</span><small>{current.totalVotes} {current.totalVotes === 1 ? 'vote' : 'votes'}</small></div>
     <div className="poll-options" role="group" aria-label="Poll choices">
       {current.options.map(option => {
         const selected = current.myVote === option.id;
@@ -33,7 +33,7 @@ export default function Poll({ postId, poll }) {
         </button>;
       })}
     </div>
-    <div className="poll-footer"><span>{busy ? 'Saving your vote…' : current.myVote ? 'Your pick is in. You can change it.' : 'One pick. Every voice counts.'}</span>
+    <div className="poll-footer"><span>{busy ? 'Saving your vote…' : current.myVote ? 'Vote saved. You can change it anytime.' : 'Choose one answer to vote.'}</span>
       {current.myVote && <button type="button" disabled={busy} onClick={() => vote(null)}>Remove vote</button>}</div>
     {error && <p className="error" role="alert">{error}</p>}
     <span className="sr-only" role="status">{!busy && current.myVote ? 'Your vote is saved.' : ''}</span>

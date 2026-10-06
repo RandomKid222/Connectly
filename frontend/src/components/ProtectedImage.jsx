@@ -13,7 +13,7 @@ export default function ProtectedImage({ src, alt = 'Shared photo', className, o
     const controller = new AbortController();
     setUrl('');
     setError(false);
-    if (!/^\/(messages|posts)\/\d+\/image$/.test(src || '')) { setError(true); return; }
+    if (!/^\/(messages|posts|admin\/threads)\/\d+\/image$/.test(src || '')) { setError(true); return; }
     api.get(src, { responseType: 'blob', signal: controller.signal }).then(response => {
       if (!active) return;
       objectUrl = URL.createObjectURL(response.data);

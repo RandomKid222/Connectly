@@ -8,16 +8,16 @@ const router = express.Router();
 router.use(requireAuth);
 router.use((req, res, next) => { res.set('Cache-Control', 'no-store'); next(); });
 
-const postSelect = 'SELECT p.*, u.username AS author_name, u.avatar_url AS author_avatar, ' +
+const postSelect = 'SELECT p.*, u.username AS author_name, u.avatar_url AS author_avatar, u.is_verified AS author_verified, ' +
   '(SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) AS likeCount, ' +
   '(SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) AS commentCount, ' +
   'EXISTS(SELECT 1 FROM likes mine WHERE mine.post_id = p.id AND mine.user_id = ?) AS likedByMe ' +
   'FROM posts p JOIN users u ON u.id = p.user_id';
 function publicPost(row) {
-  const { image_public_id, image_private, author_name, author_avatar, ...post } = row;
+  const { image_public_id, image_private, author_name, author_avatar, author_verified, ...post } = row;
   return { ...post, image_url: image_private && post.image_url ? '/posts/' + post.id + '/image' : post.image_url,
     image_private: !!image_private, likedByMe: !!post.likedByMe,
-    author: { id: post.user_id, username: author_name, avatar_url: author_avatar } };
+    author: { id: post.user_id, username: author_name, avatar_url: author_avatar, is_verified: !!author_verified } };
 }
 async function addExtras(posts, viewerId) {
   if (!posts.length) return posts;
@@ -177,7 +177,7 @@ router.get('/:id/comments', async (req, res) => {
     'ORDER BY created_at DESC, id DESC LIMIT 100), branch AS (' +
     'SELECT c.id, c.parent_id FROM comments c JOIN recent r ON r.id = c.id UNION ' +
     'SELECT parent.id, parent.parent_id FROM comments parent JOIN branch child ON parent.id = child.parent_id WHERE parent.post_id = ?) ' +
-    'SELECT c.*, u.username, u.avatar_url FROM comments c JOIN users u ON u.id = c.user_id ' +
+    'SELECT c.*, u.username, u.avatar_url, u.is_verified FROM comments c JOIN users u ON u.id = c.user_id ' +
     'WHERE c.id IN (SELECT id FROM branch) ORDER BY c.created_at, c.id', req.params.id, req.params.id);
   res.json({ comments });
 });
@@ -199,7 +199,7 @@ router.post('/:id/comments', async (req, res) => {
   }
   const info = await db.run('INSERT INTO comments (post_id, user_id, content, parent_id) VALUES (?, ?, ?, ?)',
     post.id, req.userId, content.trim(), parent?.id || null);
-  const comment = await db.get('SELECT c.*, u.username, u.avatar_url FROM comments c JOIN users u ON u.id = c.user_id WHERE c.id = ?', info.lastInsertRowid);
+  const comment = await db.get('SELECT c.*, u.username, u.avatar_url, u.is_verified FROM comments c JOIN users u ON u.id = c.user_id WHERE c.id = ?', info.lastInsertRowid);
   await notify({ userId: post.user_id, actorId: req.userId, kind: 'comment', postId: post.id, commentId: comment.id });
   if (parent && parent.user_id !== post.user_id) {
     await notify({ userId: parent.user_id, actorId: req.userId, kind: 'reply', postId: post.id, commentId: comment.id });

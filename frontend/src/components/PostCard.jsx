@@ -7,6 +7,7 @@ import LocalTime from './LocalTime.jsx';
 import ProtectedImage from './ProtectedImage.jsx';
 import Icon from './Icon.jsx';
 import Poll from './Poll.jsx';
+import VerifiedBadge from './VerifiedBadge.jsx';
 
 export default function PostCard({ post, onDelete, onBookmarkChange, expanded = false }) {
   const [saved, setSaved] = useState(!!post.savedByMe);
@@ -65,7 +66,7 @@ export default function PostCard({ post, onDelete, onBookmarkChange, expanded = 
       <div className="post-header">
         <Link to={`/profile/${post.author.username}`} className="post-author">
           <Avatar url={post.author.avatar_url} username={post.author.username} className="post-avatar" />
-          <span>{post.author.username}</span>
+          <span>{post.author.username}</span><VerifiedBadge verified={post.author.is_verified} />
         </Link>
         <span className="post-meta"><LocalTime className="post-date" value={post.created_at} /><span className="thread-tag">{post.poll ? 'Poll' : post.image_url ? 'Photo' : 'Thread'}</span></span>
       </div>

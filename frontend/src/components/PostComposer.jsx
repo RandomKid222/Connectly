@@ -55,19 +55,18 @@ export default function PostComposer({ onPosted, pollPrompt = 0 }) {
   }
   return <form className="new-post" id="create-thread" onSubmit={submit} aria-label="Create a thread">
     <div className="composer-heading"><Avatar url={user.avatar_url} username={user.username} />
-      <span><strong>Put it out there.</strong><small>A thought, a photo, a very important poll.</small></span>
-      <Icon name="plus" size={20} />
+      <span><strong>Share a thread</strong><small>Add text, photos or a poll.</small></span>
     </div>
     <input ref={titleInput} className="thread-title-input" aria-label="Thread title"
-      placeholder={pollEnabled ? 'The big question…' : 'Give it a headline…'}
+      placeholder={pollEnabled ? 'Your poll question...' : 'Thread title...'}
       maxLength={200} required value={title} onChange={event => setTitle(event.target.value)} disabled={busy} />
-    <textarea aria-label="Thread text" maxLength={5000} placeholder="The story, the hot take, the little thing that happened…"
+    <textarea aria-label="Thread text" maxLength={5000} placeholder="What's on your mind?"
       value={content} onChange={event => setContent(event.target.value)} disabled={busy} />
     {preview && <div className="attachment-preview">
       <img src={preview} alt="Selected photo" />
       <button type="button" disabled={busy} onClick={() => setImage(null)}>Remove photo</button>
     </div>}
-    {pollEnabled && <fieldset className="poll-composer" disabled={busy}><legend><Icon name="poll" size={16} />THE OPTIONS</legend>
+    {pollEnabled && <fieldset className="poll-composer" disabled={busy}><legend><Icon name="poll" size={16} />Poll choices</legend>
       <p>Use your title as the question. Add 2–6 different answers.</p>
       {options.map((option, index) => <div className="poll-option-input" key={index}>
         <span aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>

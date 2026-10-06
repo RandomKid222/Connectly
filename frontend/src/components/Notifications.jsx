@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import api from '../api';
 import Avatar from './Avatar.jsx';
 import LocalTime from './LocalTime.jsx';
+import VerifiedBadge from './VerifiedBadge.jsx';
 
 const descriptions = {
   follow: 'followed you', follow_request: 'requested to follow you', like: 'upvoted your thread',
@@ -87,7 +88,7 @@ export default function Notifications() {
         return <div key={item.id} className={'activity-item' + (!item.read_at ? ' unread' : '')}>
           <Link to={target} onClick={() => { markRead(item.id); setOpen(false); }}>
             <Avatar url={item.avatar_url} username={item.username} />
-            <span><span><strong>{item.username}</strong> {descriptions[item.kind] || 'interacted with you'}</span>
+            <span><span><strong>{item.username}</strong><VerifiedBadge verified={item.is_verified} /> {descriptions[item.kind] || 'interacted with you'}</span>
               <LocalTime value={item.created_at} className="activity-time" /></span>
           </Link>
           {item.kind === 'follow_request' && !!item.pendingRequest && <div className="request-actions">

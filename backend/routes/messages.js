@@ -16,7 +16,7 @@ router.get('/unread', async (req, res) => {
   res.json({ unreadCount: Number(row.count) });
 });
 router.get('/conversations', async (req, res) => {
-  const conversations = await db.all('SELECT u.id, u.username, u.avatar_url, ' +
+  const conversations = await db.all('SELECT u.id, u.username, u.avatar_url, u.is_verified, ' +
     "(SELECT CASE WHEN m2.image_url <> '' THEN CASE WHEN m2.content <> '' THEN 'Photo: ' || m2.content ELSE 'Photo' END ELSE m2.content END " +
     'FROM messages m2 WHERE (m2.sender_id = u.id AND m2.receiver_id = ?) OR (m2.sender_id = ? AND m2.receiver_id = u.id) ' +
     'ORDER BY m2.created_at DESC, m2.id DESC LIMIT 1) AS lastMessage, ' +
@@ -41,7 +41,7 @@ router.get('/:userId', async (req, res) => {
   if (!owner) return res.status(404).json({ error: 'User not found' });
   const messages = await db.all('SELECT * FROM messages WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?) ' +
     'ORDER BY created_at DESC, id DESC LIMIT 100', req.userId, otherId, otherId, req.userId);
-  res.json({ otherUser: { id: owner.id, username: owner.username, avatar_url: owner.avatar_url },
+  res.json({ otherUser: { id: owner.id, username: owner.username, avatar_url: owner.avatar_url, is_verified: !!owner.is_verified },
     canSend: await canMessage(owner, req.userId), messages: messages.reverse().map(publicMessage) });
 });
 router.put('/:userId/read', async (req, res) => {

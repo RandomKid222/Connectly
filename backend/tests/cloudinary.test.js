@@ -116,6 +116,15 @@ test('Cloudinary uses authenticated assets and does not expose delivery signatur
     assert.equal((await request('DELETE', '/posts/1', 1)).status, 200);
     assert.equal(deleted.at(-1).options.type, 'authenticated');
     assert.equal(assets.has(older.publicId), false);
+    await db.run("UPDATE users SET role = 'admin' WHERE id = 3");
+    assert.equal((await request('GET', '/messages/' + data.message.id + '/image', 3)).status, 404);
+    assert.equal((await request('GET', '/admin/threads/2/image', 3)).status, 200);
+    const moderated = await request('DELETE', '/admin/threads/2', 3, { reason: 'Test moderation' });
+    assert.equal(moderated.status, 200);
+    assert.equal(deleted.at(-1).id, 'connectly/old-png');
+    assert.equal(deleted.at(-1).options.type, 'authenticated');
+    assert.equal(deleted.at(-1).options.invalidate, true);
+    assert.equal(assets.has('connectly/old-png'), false);
     const beforeFailure = assets.size;
     const originalRun = db.run;
     db.run = async (sql, ...args) => {

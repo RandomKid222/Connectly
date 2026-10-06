@@ -7,16 +7,15 @@ export default function AuthLayout({ children }) {
     <section className="auth-story" aria-label="Welcome to Connectly">
       <Brand />
       <div className="auth-story-content">
-        <span className="eyebrow">THE SOCIAL SIDE OF THINGS</span>
-        <h2>THE INTERNET.<br />A LITTLE MORE<br /><em>YOU.</em></h2>
-        <p>Find the people who get it. Share the things you can't keep to yourself.</p>
-        <div className="auth-poster" aria-hidden="true">
-          <div className="poster-cutout"><img src="/favicon.svg" alt="" /><span>THOUGHTS<br />WORTH<br />KEEPING.</span></div>
-          <span className="poster-spark"><Icon name="spark" size={64} /></span>
-          <span className="poster-ticket">OPEN INVITATION<br /><strong>Come as you are.</strong></span>
-        </div>
+        <span className="eyebrow">Welcome to Connectly</span>
+        <h2>Stay close,<br /><em>stay connected.</em></h2>
+        <p>Share everyday moments, find your people, and keep the conversation going.</p>
+        <div className="connection-art" aria-hidden="true"><span /><img src="/favicon.svg" alt="" /><span /></div>
+        <div className="auth-features"><span><Icon name="message" size={18} />Threads & conversations</span>
+          <span><Icon name="photo" size={18} />Photos & moments</span>
+          <span><Icon name="poll" size={18} />Community polls</span></div>
       </div>
-      <span className="auth-story-footer">Different people. Shared stories. Connectly.</span>
+      <span className="auth-story-footer">Your community, wherever you are.</span>
     </section>
     <section className="auth-form-wrap"><div className="auth-mobile-brand"><Brand /></div>{children}</section>
   </div>;

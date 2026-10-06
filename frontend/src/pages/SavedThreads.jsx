@@ -28,13 +28,13 @@ export default function SavedThreads() {
   }, []);
   const remove = id => { version.current++; setPosts(current => current.filter(post => post.id !== id)); };
   return <div className="saved-page">
-    <header className="page-heading saved-heading"><span className="eyebrow">YOUR PRIVATE CLIPPINGS</span><h1>KEEP THE<br /><em>GOOD BITS.</em></h1>
+    <header className="page-heading saved-heading"><span className="eyebrow">Only visible to you</span><h1>Saved threads</h1>
       <p>A thread worth revisiting? It's right here. Your saved list is visible only to you.</p><Icon name="bookmark" size={68} /></header>
     {error && <p className="error" role="alert">{error}</p>}
     {loading ? <p className="muted">Loading your collection…</p> : !posts.length ? <div className="empty-state">
-      <Icon name="bookmark" size={34} /><h2>A little collection of you.</h2>
+      <Icon name="bookmark" size={34} /><h2>No saved threads yet</h2>
       <p>Use Save on a thread to keep it here. Private threads stay subject to the author's privacy choices.</p>
-      <Link className="secondary-button" to="/">Find something worth keeping <Icon name="arrow" size={16} /></Link>
+      <Link className="secondary-button" to="/">Browse your feed <Icon name="arrow" size={16} /></Link>
     </div> : posts.map(post => <PostCard key={post.id} post={post}
       onDelete={post.author.id === user.id ? remove : undefined}
       onBookmarkChange={(saved, id) => { if (!saved) remove(id); }} />)}

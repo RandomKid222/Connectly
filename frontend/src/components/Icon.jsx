@@ -1,6 +1,7 @@
 import React from 'react';
 
 const paths = {
+  refresh: <><path d="M20 8V3l-3 3a8 8 0 1 0 3 8M20 8h-5" /></>,
   bookmark: <path d="M6 3h12v18l-6-4-6 4Z" />,
   poll: <><path d="M4 21h16M7 17V9m5 8V3m5 14v-5" /></>,
   spark: <path d="m12 2 2.4 6.5L21 6l-2.5 6.4L22 16l-7-1 1 7-4-4-4 4 1-7-7 1 3.5-3.6L3 6l6.6 2.5Z" />,

@@ -93,7 +93,7 @@ router.get('/export', async (req, res) => {
   const pollVotes = await db.all('SELECT post_id, option_id, created_at FROM poll_votes WHERE user_id = ? ORDER BY post_id', req.userId);
   res.set('Content-Disposition', 'attachment; filename="connectly-data.json"');
   res.json({ exported_at: new Date().toISOString(), account: {
-    id: user.id, username: user.username, email: user.email, bio: user.bio,
+    id: user.id, username: user.username, email: user.email, bio: user.bio, is_verified: !!user.is_verified,
     created_at: user.created_at, settings: settingsOf(user)
   }, posts, comments, messages, following, followers, bookmarks, pollVotes });
 });

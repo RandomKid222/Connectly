@@ -25,7 +25,7 @@ router.get('/:username', async (req, res) => {
     postCount: Number((await db.get('SELECT COUNT(*) c FROM posts WHERE user_id = ?', owner.id)).c)
   } : { followerCount: null, followingCount: null, postCount: null };
   res.json({ user: {
-    id: owner.id, username: owner.username, avatar_url: owner.avatar_url, created_at: owner.created_at,
+    id: owner.id, username: owner.username, avatar_url: owner.avatar_url, is_verified: !!owner.is_verified, created_at: owner.created_at,
     bio: canViewPosts ? owner.bio : '', profile_visibility: owner.profile_visibility,
     share_follow_lists: !!owner.share_follow_lists, canViewPosts, canMessage: await canMessage(owner, req.userId),
     isFollowing, followRequested, isSelf: owner.id === req.userId, ...counts
@@ -116,7 +116,7 @@ async function followList(req, res, direction) {
   }
   const target = direction === 'followers' ? 'follower_id' : 'following_id';
   const filter = direction === 'followers' ? 'following_id' : 'follower_id';
-  const rows = await db.all('SELECT u.id, u.username, u.avatar_url FROM follows f JOIN users u ON u.id = f.' +
+  const rows = await db.all('SELECT u.id, u.username, u.avatar_url, u.is_verified FROM follows f JOIN users u ON u.id = f.' +
     target + ' WHERE f.' + filter + ' = ? ORDER BY u.username LIMIT 100', owner.id);
   res.json({ [direction]: rows });
 }
@@ -126,7 +126,7 @@ router.get('/', async (req, res) => {
   const term = typeof req.query.q === 'string' ? req.query.q.trim().slice(0, 50) : '';
   if (!term) return res.json({ users: [] });
   const escaped = term.replace(/[!%_]/g, char => '!' + char);
-  const users = await db.all("SELECT id, username, avatar_url FROM users WHERE id <> ? AND searchable = 1 " +
+  const users = await db.all("SELECT id, username, avatar_url, is_verified FROM users WHERE id <> ? AND searchable = 1 " +
     "AND username LIKE ? ESCAPE '!' ORDER BY username COLLATE NOCASE LIMIT 8", req.userId, '%' + escaped + '%');
   res.json({ users });
 });

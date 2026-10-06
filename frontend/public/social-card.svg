@@ -1,28 +1,25 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="Connectly: Your people. Plot twists.">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="Connectly: Stay close, stay connected.">
   <rect width="1200" height="630" fill="#192015"/>
-  <path d="M65 62H1135M65 569H1135" stroke="#6e7d5c" stroke-width="1"/>
-  <g transform="translate(70 90)">
+  <path d="M85 77h1030M85 554h1030" stroke="#596b46"/>
+  <g transform="translate(82 107)">
     <path d="M27 13h-8L9 23v18l10 10h8V39h-5l-2-2V27l2-2h5Z" fill="#f8faef"/>
     <path d="M37 13h8l10 10v18L45 51h-8V39h5l2-2V27l-2-2h-5Z" fill="#f8faef"/>
     <path d="M25 28h14v8H25Z" fill="#d5fa45"/>
   </g>
-  <text x="154" y="139" fill="#f8faef" font-family="Arial, Helvetica, sans-serif" font-size="43" font-weight="800" letter-spacing="-2">connectly</text>
-  <path d="M357 117h18v18m0-18-19 19" fill="none" stroke="#d5fa45" stroke-width="4"/>
-  <text x="80" y="295" fill="#fbfaf3" font-family="Arial, Helvetica, sans-serif" font-size="98" font-weight="800" letter-spacing="-5">YOUR PEOPLE.</text>
-  <g transform="rotate(-2 400 396)">
-    <rect x="77" y="320" width="737" height="118" fill="#d5fa45"/>
-    <text x="88" y="418" fill="#192015" font-family="Arial, Helvetica, sans-serif" font-size="98" font-weight="800" letter-spacing="-5">PLOT TWISTS.</text>
+  <text x="168" y="155" fill="#f8faef" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="700" letter-spacing="-1.7">connectly</text>
+  <path d="M370 131h18v18m0-18-19 19" fill="none" stroke="#d5fa45" stroke-width="4"/>
+  <text x="90" y="302" fill="#fbfaf3" font-family="Arial, Helvetica, sans-serif" font-size="76" font-weight="600" letter-spacing="-2.5">Stay close,</text>
+  <text x="90" y="395" fill="#d5fa45" font-family="Arial, Helvetica, sans-serif" font-size="76" font-weight="600" letter-spacing="-2.5">stay connected.</text>
+  <text x="94" y="475" fill="#bdcca8" font-family="Arial, Helvetica, sans-serif" font-size="23">Your threads. Your conversations. Your community.</text>
+  <g transform="translate(920 281)">
+    <path d="M-10 0H43M147 0h52" stroke="#809164"/>
+    <circle cx="-10" cy="0" r="7" fill="#192015" stroke="#d5fa45"/>
+    <circle cx="199" cy="0" r="7" fill="#192015" stroke="#d5fa45"/>
+    <g transform="translate(44 -52) scale(1.6)">
+      <path d="M27 13h-8L9 23v18l10 10h8V39h-5l-2-2V27l2-2h5Z" fill="#f8faef"/>
+      <path d="M37 13h8l10 10v18L45 51h-8V39h5l2-2V27l-2-2h-5Z" fill="#f8faef"/>
+      <path d="M25 28h14v8H25Z" fill="#d5fa45"/>
+    </g>
   </g>
-  <g transform="translate(943 142) rotate(12) scale(2.8)">
-    <path d="M32 1l7 21 21-8-14 18 17 14-23-1-5 23-8-21-21 8 14-18L3 23l23 1Z" fill="#d5fa45"/>
-  </g>
-  <g transform="rotate(7 985 454)">
-    <rect x="878" y="395" width="208" height="108" fill="#fbfaf3" stroke="#192015"/>
-    <path d="M890 435h184" stroke="#192015" stroke-dasharray="3 4"/>
-    <text x="895" y="420" fill="#192015" font-family="monospace" font-size="12">OPEN INVITATION</text>
-    <text x="895" y="467" fill="#192015" font-family="Georgia, serif" font-size="21" font-style="italic">Come as you are.</text>
-  </g>
-  <text x="84" y="520" fill="#c8d6b7" font-family="monospace" font-size="17">THREADS / PHOTOS / POLLS / YOUR CORNER OF THE INTERNET</text>
-  <text x="84" y="601" fill="#c8d6b7" font-family="monospace" font-size="15">connectly.lol</text>
-  <text x="940" y="601" fill="#c8d6b7" font-family="monospace" font-size="15">STAY CURIOUS ↗</text>
+  <text x="93" y="600" fill="#bdcca8" font-family="Arial, Helvetica, sans-serif" font-size="19">connectly.lol</text>
 </svg>

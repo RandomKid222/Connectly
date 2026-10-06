@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import api from '../api';
 import { useAuth } from '../context/AuthContext.jsx';
 import Icon from '../components/Icon.jsx';
+import { Link } from 'react-router-dom';
 
 export default function Settings() {
   const { user, setUser } = useAuth();
@@ -64,8 +65,11 @@ export default function Settings() {
     finally { setExporting(false); }
   }
   return <div className="settings-page">
-    <header className="page-heading"><span className="eyebrow">MAKE YOURSELF AT HOME</span><h1>Settings</h1>
-      <p>Your space, your preferences. Make Connectly feel like you.</p></header>
+    <header className="page-heading"><span className="eyebrow">Your account</span><h1>Settings</h1>
+      <p>Manage your appearance, privacy and security.</p></header>
+    {user.role === 'admin' && <section className="settings-card admin-access-card"><h2><Icon name="shield" size={19} />Administration</h2>
+      <p className="setting-help">Manage verified badges, moderate threads and comments, and review action history.</p>
+      <Link className="secondary-button" to="/admin">Open admin panel<Icon name="arrow" size={16} /></Link></section>}
     <nav className="settings-nav" aria-label="Settings sections">
       <a href="#appearance"><Icon name="sun" size={16} />Appearance</a>
       <a href="#privacy"><Icon name="lock" size={16} />Privacy</a>
@@ -96,7 +100,7 @@ export default function Settings() {
       <fieldset className="settings-card" id="privacy" disabled={busy}>
         <legend><Icon name="lock" size={19} />Privacy</legend>
         <label className="setting-row"><span>Profile visibility
-          <span className="setting-help">Private profiles share their bio and threads with approved followers. Existing followers keep access. Your name and profile photo remain visible.</span></span>
+          <span className="setting-help">Private profiles share their bio and threads with approved followers. Existing followers keep access. Your name and profile photo remain visible. Administrators can review threads and comments for moderation.</span></span>
           <select aria-label="Profile visibility" value={settings.profile_visibility} onChange={event => change('profile_visibility', event.target.value)}>
             <option value="public">All members</option><option value="private">Approved followers</option>
           </select>

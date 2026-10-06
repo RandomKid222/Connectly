@@ -6,6 +6,7 @@ import Avatar from './Avatar.jsx';
 import Notifications from './Notifications.jsx';
 import Brand from './Brand.jsx';
 import Icon from './Icon.jsx';
+import VerifiedBadge from './VerifiedBadge.jsx';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -17,7 +18,7 @@ export default function Navbar() {
         <Notifications />
         <Link to={`/profile/${user.username}`} className="account-link">
           <Avatar url={user.avatar_url} username={user.username} className="nav-avatar" />
-          <span>{user.username}</span>
+          <span>{user.username}<VerifiedBadge verified={user.is_verified} /></span>
         </Link>
         <button type="button" className="mobile-logout" aria-label="Log out" onClick={logout}><Icon name="logout" size={18} /></button>
       </div>

@@ -1,0 +1,109 @@
+/* Same ink-and-acid palette, quieter typography and direct labels. */
+.page-heading h1, .journal-hero h1, .saved-heading h1, .profile-header h1,
+.auth-form h1, .post-title, .welcome-card h2, .empty-state h2, .section-heading h2,
+.inbox-heading h2, .comment-section h3 {
+  font-family: inherit; font-style: normal; letter-spacing: -.6px; font-weight: 650;
+}
+.journal-hero h1, .saved-heading h1, .messages-page .page-heading h1, .settings-page .page-heading h1,
+.admin-page h1 { font-size: clamp(27px,2.5vw,34px); line-height: 1.25; max-width: 100%; margin: 0 0 12px; }
+.journal-hero { padding: 8px 0 24px; margin-bottom: 26px; }
+.journal-hero .eyebrow, .saved-heading .eyebrow { margin-bottom: 12px; }
+.eyebrow, .sidebar-label { text-transform: none; letter-spacing: .15px; font-size: 11px; }
+.journal-hero p, .saved-heading p { font-size: 13px; margin: 0; }
+.post-title { font-size: 22px; line-height: 1.4; }
+.post-content { line-height: 1.7; }
+.thread-title-input { font-family: inherit; font-size: 17px; font-weight: 500; }
+.new-post-actions button[type="submit"], .primary-button { text-transform: none; letter-spacing: 0; }
+.sidebar-note { transform: none; border-style: solid; border-radius: 4px; padding: 18px 14px; }
+.sidebar-note::before { display: none; }
+.sidebar-note > .icon { width: 24px; height: 24px; transform: none; }
+.sidebar-note p { font-size: 15px; font-weight: 650; letter-spacing: -.2px; margin: 14px 0; }
+.side-nav a { font-size: 12px; }
+.discover-card { transform: none; border-radius: 4px; padding: 22px 18px; }
+.discover-card .eyebrow { font-size: 10px; margin-bottom: 18px; }
+.discover-card h2 { font-size: 23px; line-height: 1.25; letter-spacing: -.6px; font-weight: 650; margin: 14px 0; }
+.discover-card button, .welcome-card a, .tabs button { text-transform: none; letter-spacing: 0; }
+.welcome-card h2 { font-size: 21px; }
+.welcome-card .eyebrow { font-size: 10px; }
+.clipping-note > span { font-size: 12px; }
+.saved-heading { padding: 8px 0 26px; }
+.saved-heading > .icon { width: 30px; height: 30px; right: 0; top: 8px; }
+.saved-heading h1 { padding-right: 35px; }
+.saved-heading p { padding-top: 6px; max-width: 100%; }
+.profile-header h1 { font-size: 28px; }
+.profile-cover span { text-transform: none; font-family: inherit; font-size: 12px; }
+.section-heading h2, .inbox-heading h2 { font-size: 20px; }
+.empty-state h2 { font-size: 22px; }
+.settings-card legend, .settings-card h2 { font-family: inherit; text-transform: none; font-size: 17px; letter-spacing: 0; }
+.settings-nav a { text-transform: none; font-size: 11px; }
+.poll-heading, .poll-footer { font-family: inherit; letter-spacing: 0; font-size: 11px; }
+.poll-composer legend { letter-spacing: 0; font-size: 12px; }
+.verified-badge { display: inline-block; width: 18px; height: 18px; flex: none; margin-left: 5px; vertical-align: -.2em; }
+.profile-header h1 .verified-badge { width: 23px; height: 23px; }
+.post-author .verified-badge { margin-left: -3px; }
+.user-search-result .verified-badge { margin-left: -4px; }
+.auth-story h2 { font-family: inherit; font-size: clamp(36px,3.7vw,49px); font-weight: 600; line-height: 1.17; letter-spacing: -1.3px; margin: 20px 0 22px; }
+.auth-story h2 em { color: #d5fa45; background: transparent; font-style: normal; padding: 0; transform: none; margin: 0; }
+.auth-story .eyebrow { color: #b9c6ac; letter-spacing: .2px; }
+.auth-story-content { padding-top: 34px; }
+.auth-story-content > p { font-size: 14px; line-height: 1.8; }
+.auth-story-footer { font-family: inherit; font-size: 11px; }
+.connection-art { display: flex; align-items: center; gap: 18px; margin: 38px 0; }
+.connection-art img { width: 100px; height: 100px; }
+.connection-art span { height: 1px; width: 55px; background: #809164; position: relative; }
+.connection-art span::after { content: ""; width: 10px; height: 10px; border: 1px solid #d5fa45; border-radius: 50%; position: absolute; top: -5px; right: 0; background: #192015; }
+.connection-art span:first-child::after { left: 0; right: auto; }
+.auth-features { display: grid; gap: 15px; color: #cfdbc3; font-size: 12px; }
+.auth-features > span { display: flex; align-items: center; gap: 12px; }
+.auth-features .icon { color: #d5fa45; }
+.auth-form form button { text-transform: none; letter-spacing: 0; }
+.admin-page { max-width: 920px; margin: auto; min-width: 0; }
+.admin-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 24px 0; }
+.admin-tabs button { min-height: 40px; padding: 9px 14px; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: 4px; }
+.admin-tabs button[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); border-color: #192015; }
+.admin-toolbar { display: flex; align-items: center; gap: 12px; margin: 0 0 20px; }
+.admin-toolbar input { flex: 1; min-width: 0; font-size: 14px; }
+.admin-toolbar button { min-height: 43px; }
+.admin-row { border: 1px solid var(--border); background: var(--surface); border-radius: 5px; padding: 20px; margin-bottom: 16px; min-width: 0; }
+.admin-row h2 { font-size: 18px; font-weight: 650; letter-spacing: -.3px; margin: 8px 0; overflow-wrap: anywhere; }
+.admin-row p { line-height: 1.7; margin: 12px 0; overflow-wrap: anywhere; white-space: pre-wrap; font-size: 13px; }
+.admin-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; color: var(--muted); font-size: 11px; }
+.admin-meta strong { color: var(--text); }
+.admin-meta .verified-badge { margin-left: -5px; }
+.admin-row .protected-image, .admin-photo { max-width: 260px; max-height: 180px; object-fit: contain; display: block; border-radius: 4px; margin: 15px 0; }
+.admin-user-row { display: flex; align-items: center; gap: 14px; }
+.admin-user-row .admin-user-details { flex: 1; min-width: 0; }
+.admin-user-row h2 { font-size: 16px; margin: 0 0 6px; }
+.admin-user-row small { color: var(--muted); font-size: 11px; }
+.admin-row button { min-height: 40px; }
+.admin-badge-tag { background: var(--primary-soft); color: var(--text); padding: 3px 7px; border-radius: 3px; }
+.admin-pagination { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 24px 0; font-size: 12px; }
+.admin-pagination button { min-height: 40px; }
+.admin-empty { padding: 32px; border: 1px solid var(--border); background: var(--surface); border-radius: 5px; color: var(--muted); }
+.admin-note { padding: 16px; background: var(--primary-soft); border: 1px solid var(--border); border-radius: 4px; font-size: 12px; line-height: 1.7; margin-bottom: 20px; }
+.admin-dialog { max-width: 480px; width: calc(100% - 32px); padding: 26px; border: 1px solid var(--border); border-radius: 5px; color: var(--text); background: var(--surface); box-shadow: 5px 5px 0 #10130e; }
+.admin-dialog::backdrop { background: rgba(8,12,5,.7); }
+.admin-dialog h2 { font-size: 23px; letter-spacing: -.5px; }
+.admin-dialog p { font-size: 13px; line-height: 1.8; margin: 15px 0; overflow-wrap: anywhere; }
+.admin-dialog label { display: grid; gap: 10px; font-size: 13px; }
+.admin-dialog textarea { min-height: 100px; font-size: 16px; }
+.admin-dialog-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+.admin-dialog-actions button { min-height: 42px; }
+.admin-access-card h2 { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+@media(max-width:800px) {
+  .side-nav a.admin-nav-link { display: none; }
+  .side-nav a { font-size: 9px; }
+}
+@media(max-width:480px) {
+  .journal-hero h1, .saved-heading h1, .messages-page .page-heading h1, .settings-page .page-heading h1, .admin-page h1 { font-size: 27px; letter-spacing: -.6px; line-height: 1.3; }
+  .thread-title-input { font-size: 17px; }
+  .post-title { font-size: 20px; }
+  .poll-footer { font-size: 10px; }
+  .profile-cover span { font-size: 10px; }
+  .admin-toolbar { flex-wrap: wrap; }
+  .admin-toolbar input { width: 100%; flex-basis: 100%; font-size: 16px; }
+  .admin-row { padding: 16px; }
+  .admin-user-row { flex-wrap: wrap; gap: 12px; }
+  .admin-user-row button { width: 100%; }
+  .admin-dialog { padding: 20px; }
+}

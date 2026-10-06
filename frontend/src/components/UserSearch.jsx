@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import api from '../api';
 import Avatar from './Avatar.jsx';
 import Icon from './Icon.jsx';
+import VerifiedBadge from './VerifiedBadge.jsx';
 
 export default function UserSearch() {
   const [query, setQuery] = useState('');
@@ -77,7 +78,7 @@ export default function UserSearch() {
             <Link key={user.id} to={`/profile/${user.username}`} onClick={clear}
               className="user-search-result">
               <Avatar url={user.avatar_url} username={user.username} className="search-avatar" />
-              <span>{user.username}</span>
+              <span>{user.username}</span><VerifiedBadge verified={user.is_verified} />
             </Link>
           ))}
         </div>

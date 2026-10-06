@@ -33,3 +33,10 @@ async function requireAuth(req, res, next) {
 }
 
 module.exports = { requireAuth, JWT_SECRET };
+async function requireAdmin(req, res, next) {
+  // Read current privileges from the database; ignore client fields and JWT role claims.
+  const user = await db.get('SELECT role FROM users WHERE id = ?', req.userId);
+  if (user?.role !== 'admin') return res.status(403).json({ error: 'Administrator access required' });
+  next();
+}
+module.exports.requireAdmin = requireAdmin;

@@ -6,6 +6,7 @@ import Avatar from '../components/Avatar.jsx';
 import LocalTime from '../components/LocalTime.jsx';
 import ProtectedImage from '../components/ProtectedImage.jsx';
 import Icon from '../components/Icon.jsx';
+import VerifiedBadge from '../components/VerifiedBadge.jsx';
 
 export default function Messages() {
   const { userId } = useParams();
@@ -178,7 +179,7 @@ export default function Messages() {
 
   return (
     <div className={'messages-page' + (userId ? ' has-conversation' : '')}>
-    <header className="page-heading compact-heading"><span className="eyebrow">KEEP THE CONVERSATION GOING</span><h1>Messages</h1><p>A little closer, one message at a time.</p></header>
+    <header className="page-heading compact-heading"><span className="eyebrow">Conversations</span><h1>Messages</h1><p>Keep in touch with your people.</p></header>
     <div className="messages-layout">
       <aside className="conversation-list">
         <div className="inbox-heading"><h2>Your inbox</h2><Icon name="message" size={20} /></div>
@@ -196,7 +197,7 @@ export default function Messages() {
                 onClick={() => { navigate(`/messages/${user.id}`); setSearch(''); }}>
                 <span className="conversation-main">
                   <Avatar url={user.avatar_url} username={user.username} className="conversation-avatar" />
-                  {user.username}
+                  {user.username}<VerifiedBadge verified={user.is_verified} />
                 </span>
               </button>
             ))}
@@ -214,7 +215,7 @@ export default function Messages() {
               <Avatar url={conversation.avatar_url} username={conversation.username} className="conversation-avatar" />
               <span className="conversation-details">
                 <span className="conversation-name-row">
-                  <span className="conversation-name">{conversation.username}</span>
+                  <span className="conversation-name">{conversation.username}<VerifiedBadge verified={conversation.is_verified} /></span>
                   {Number(conversation.unreadCount) > 0 &&
                     <span className="unread-dot" aria-label={`${conversation.unreadCount} unread messages`} />}
                 </span>
@@ -235,7 +236,7 @@ export default function Messages() {
             <div className="thread-header">
               <Link to="/messages" className="mobile-back" aria-label="Back to inbox"><Icon name="back" size={21} /></Link>
               {otherUser && <Avatar url={otherUser.avatar_url} username={otherUser.username} className="conversation-avatar" />}
-              <span>{otherUser?.username || 'Conversation'}<small>Your conversation</small></span>
+              <span>{otherUser?.username || 'Conversation'}<VerifiedBadge verified={otherUser?.is_verified} /><small>Your conversation</small></span>
               <Icon name="message" size={20} className="thread-header-icon" />
             </div>
             {threadError && <p className="error thread-error" role="alert">{threadError}</p>}

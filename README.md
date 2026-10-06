@@ -1,16 +1,26 @@
 # Connectly
 
-The interface uses an ink-and-acid design: a black masthead, lime cutouts,
-warm paper surfaces, oversized headlines, serif thread titles and sharp edges.
+**Stay close, stay connected.**
+
+The interface keeps its ink-and-acid colours: a black masthead, lime accents
+and warm paper surfaces. Headings are smaller, in sentence case, with simpler
+labels and clean sans-serif type.
 A new interlocking connection mark appears in the header, favicon, Apple
 touch icon and social preview. Desktop has side navigation; phones have a
 five-item bottom menu. Existing light/dark/device preferences are preserved.
 
-Two new features: private **Saved** threads and polls with **2–6 choices**.
+Features include private **Saved** threads and polls with **2–6 choices**.
 Use Save on any accessible thread, then open Saved to revisit it. Add poll in
 the composer creates a poll; each account can vote once, change its choice or
 remove its vote. Polls can include photos. This version updates both frontend
 and backend. See [UPDATE_GUIDE.md](UPDATE_GUIDE.md) before deploying.
+
+Administrators can assign or remove verified badges, review and remove threads
+and comments, and see an action history at /admin. Every account starts as an
+unverified member. Set up your own administrator account once through your
+existing Turso database; [ADMIN_GUIDE.md](ADMIN_GUIDE.md) gives the exact steps.
+A verified badge does not grant administrator access. Admin access is checked
+against the database on each request, including when using an older login token.
 
 Primary public site: [connectly.lol](https://connectly.lol/).
 The alternate domain [contactly.lol](https://contactly.lol/) redirects to it.
@@ -36,6 +46,8 @@ approval, DM permissions, search and Explore visibility, follow-list sharing,
 an account-data download, password changes, and signing out other sessions.
 Settings persist on the account. Private profiles keep existing followers;
 new follow requests are accepted or declined in the notification dropdown.
+Administrators can review private threads and comments for moderation.
+Administrator status does not provide access to other members' direct messages.
 New thread and DM photos are protected Cloudinary assets, delivered through
 the API after checking access. Existing public thread photos are converted
 when their owner switches to a private profile. Provider caches can take time
@@ -104,5 +116,6 @@ npm test
 The checks use temporary databases and test credentials. They cover migration,
 photo access, replies, privacy, discoverability, notifications, password/session
 changes, reset links, timezone conversion, bookmarks, poll validation,
-vote changes, transaction rollback, and mocked Cloudinary operations.
+vote changes, transaction rollback, verified badges, administrator permissions,
+moderation, audit history, and mocked Cloudinary operations.
 They do not send real email or contact a live Cloudinary account.
